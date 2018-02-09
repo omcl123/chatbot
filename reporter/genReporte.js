@@ -11,7 +11,8 @@ function generateReport(objData){
   var idCliente = (objData.clientId).toString();
   var idPage = new Date().getTime().toString();
   var urlReturn = '';
-  var dirName ='../../reporteCliente/'+idCliente;
+  //var dirName ='../../reporteCliente/'+idCliente;
+  var dirName ='./'+idCliente;
   var stream = fs.createWriteStream(fileName);
 
   if (fs.existsSync(dirName)) {
@@ -40,5 +41,5 @@ function generateReport(objData){
   });
 
   //urlReturn = "http://ec2-54-172-254-2.compute-1.amazonaws.com/reporteCliente/"+idCliente+"/"+idPage+".html";
-  urlReturn = "http://localhost:3300/"+idCliente+"/"+idPage+".html";
+  return "http://localhost:3300/"+idCliente+"/"+idPage+".html";
 }
