@@ -6,14 +6,15 @@ function buildHtml(tipo) {
   return '<!DOCTYPE html>' + '<html><header>' + header + '</header><body>' + body + '</body></html>';
 };
 
-function generateReport(objData){
-
-  var idCliente = (objData.clientId).toString();
+module.exports={
+	generateReport: function(objData){
+		var idCliente = (objData._clientId);
   var idPage = new Date().getTime().toString();
   var urlReturn = '';
   //var dirName ='../../reporteCliente/'+idCliente;
   var dirName ='./'+idCliente;
-  var stream = fs.createWriteStream(fileName);
+  console.log(dirName);
+  
 
   if (fs.existsSync(dirName)) {
     console.log("existe carpeta cliente");
@@ -22,8 +23,8 @@ function generateReport(objData){
     fs.mkdirSync(dirName)
     console.log("carpeta creada");
   }
-
-  switch(objData.type){
+  console.log(objData._type);
+  switch(objData._type){
     case "bar-chart":
       console.log("pidio-bar-char");
       break;
@@ -34,12 +35,14 @@ function generateReport(objData){
       console.log("pidio-line-chart");
       break;
   }
-
+  var stream = fs.createWriteStream(dirName);
   stream.once('open', function(fd) {
-    var html = buildHtml(objData.type);
+    var html = buildHtml(objData._type);
     stream.end(html);
   });
 
   //urlReturn = "http://ec2-54-172-254-2.compute-1.amazonaws.com/reporteCliente/"+idCliente+"/"+idPage+".html";
   return "http://localhost:3300/"+idCliente+"/"+idPage+".html";
+	}
 }
+
