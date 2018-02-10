@@ -1,7 +1,7 @@
 
 function Reporte(str){
 	this._clientId=str["clientID"];
-	console.log(this._clientId);
+	//console.log(this._clientId);
 	this._type=JSON.stringify(str["type"]);
 	
 };
