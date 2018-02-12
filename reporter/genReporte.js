@@ -23,7 +23,6 @@ module.exports={
       console.log("carpeta "+idCliente+" creada");
     }
     var typeRep = objData._type;
-    typeRep = typeRep.replace(/"/g,'');
 
     if(typeRep=="bar-chart"){
       //Bar
