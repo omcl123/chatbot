@@ -9,7 +9,7 @@ module.exports={
     var idPage = new Date().getTime().toString();
     var urlReturn = '';
     //var dirName ='../../reporteCliente/'+idCliente;
-    var dirName ='./'+idCliente;
+    var dirName ='../../../var/www/html/reporteCliente/'+idCliente;
     //console.log(dirName);
     var dirAndPage = dirName+"/"+idPage+".html";
     var header='';
@@ -73,7 +73,7 @@ module.exports={
                 '}'+
                 '</script>';
       body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-              '<script src="../canvasjs.min.js"></script>';
+              '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
     }else if(typeRep=="pie-chart"){
       //Pie
       header = '<meta charset="UTF-8">'+
@@ -102,7 +102,7 @@ module.exports={
                 '}'+
                 '</script>';
       body=  '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-              '<script src="../canvasjs.min.js"></script>';
+              '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
     }else if(typeRep=="line-chart"){
       //Line
       header='<meta charset="UTF-8">'+
@@ -139,7 +139,7 @@ module.exports={
               '}'+
               '</script>';
       body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-              '<script src="../canvasjs.min.js"></script>';
+              '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
     }else{
       return "no existe ese reporte";
     }
@@ -150,8 +150,8 @@ module.exports={
       stream.end(html);
     });
 
-    //urlReturn = "http://ec2-54-172-254-2.compute-1.amazonaws.com/reporteCliente/"+idCliente+"/"+idPage+".html";
-    return "http://localhost:3300/"+idCliente+"/"+idPage+".html";
+    return urlReturn = "http://ec2-54-172-254-2.compute-1.amazonaws.com/reporteCliente/"+idCliente+"/"+idPage+".html";
+    //return "http://localhost:3300/"+idCliente+"/"+idPage+".html";
   	}
 }
 
