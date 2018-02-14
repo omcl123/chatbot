@@ -29,7 +29,6 @@ function genDataBar(jsonRep){
 
 //{ y: 26, name: "School Aid", infoClick:true},
 function genDataPie(jsonRep){
-  console.log("genera data de pie");
   var textDataReturn = '[';
   var numItems = jsonRep['data'].length;
   //{ y: 300878, label: "Venezuela", infoClick:true}
@@ -43,14 +42,41 @@ function genDataPie(jsonRep){
   return textDataReturn;
 };
 
+function genDataLine(jsonRep){
+  var textDataReturn = '[';
+  var cantLineas = jsonRep['data'].length;
+  var numEpocas = -1;
+
+  for (var i = 0; i < cantLineas; i++) {
+    textDataReturn += '{click: onClick,type: "spline",name: "'+ jsonRep['data'][i]['label'] +'",showInLegend: true,dataPoints: [';
+
+    numEpocas = jsonRep['data'][i]['data'].length;
+    for(var j = 0; j < numEpocas; j++){
+
+      textDataReturn += '{ label:"'+ jsonRep['data'][i]['data'][j]['label'] +'", y:'+ jsonRep['data'][i]['data'][j]['value'] +'}';
+      if(j+1!=numEpocas){
+        textDataReturn += ',';
+      }
+    }
+    textDataReturn += ']}';
+    if(i+1!=cantLineas){
+      textDataReturn += ',';
+    }
+  };
+  textDataReturn +=']';
+  return textDataReturn;
+};
+
 function buildHeaderBody(objHtml,jsonRep){
 
   var title = jsonRep['title'];
+  var legendY = '';
+  var legendX = '';
   var textData = '';
   if(jsonRep['type']=="bar-chart"){
     //Bar
-    var legendX = jsonRep['legendX'];
-    var legendY = jsonRep['legendY'];
+    legendX = jsonRep['legendX'];
+    legendY = jsonRep['legendY'];
     textData = genDataBar(jsonRep);
     objHtml.header = '<meta charset="UTF-8">'+
                     '<script>'+
@@ -117,6 +143,8 @@ function buildHeaderBody(objHtml,jsonRep){
                     '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
   }else if(jsonRep['type']=="line-chart"){
     //Line
+    textData = genDataLine(jsonRep);
+    legendY = jsonRep['legendY'];
     objHtml.header= '<meta charset="UTF-8">'+
                     '<script>'+
                     'window.onload = function () {'+
@@ -124,10 +152,10 @@ function buildHeaderBody(objHtml,jsonRep){
                       'animationEnabled: true,'+
                       'exportEnabled: true,'+
                       'title:{'+
-                        'text: "Gold Medals Won in Olympics"'+             
+                        'text: "'+title+'"'+             
                       '},'+ 
                       'axisY:{'+
-                        'title: "Number of Medals"'+
+                        'title: "'+legendY+'"'+
                       '},'+
                       'toolTip: {'+
                         'shared: true'+
@@ -136,34 +164,7 @@ function buildHeaderBody(objHtml,jsonRep){
                         'cursor:"pointer",'+
                         'itemclick: toggleDataSeries'+
                       '},'+
-                      'data: [{'+
-                        'click: onClick,'+        
-                        'type: "spline",'+  
-                        'name: "US",'+        
-                        'showInLegend: true,'+
-                        'dataPoints: ['+
-                          '{ label: "Atlanta 1996" , y: 44 },'+     
-                          '{ label:"Sydney 2000", y: 37 },'+     
-                          '{ label: "Athens 2004", y: 36 },'+     
-                          '{ label: "Beijing 2008", y: 36 },'+     
-                          '{ label: "London 2012", y: 46 },'+
-                          '{ label: "Rio 2016", y: 46 }'+
-                        ']'+
-                      '},'+ 
-                      '{'+
-                        'click: onClick,'+ 
-                        'type: "spline",'+
-                        'name: "China",'+        
-                        'showInLegend: true,'+
-                        'dataPoints: ['+
-                          '{ label: "Atlanta 1996" , y: 16 },'+     
-                          '{ label:"Sydney 2000", y: 28 },'+     
-                          '{ label: "Athens 2004", y: 32 },'+     
-                          '{ label: "Beijing 2008", y: 48 },'+     
-                          '{ label: "London 2012", y: 38 },'+
-                          '{ label: "Rio 2016", y: 26 }'+
-                        ']'+
-                      '}]'+
+                      'data:'+textData+
                     '});'+
                     'chart.render();'+
                     'function toggleDataSeries(e) {'+
