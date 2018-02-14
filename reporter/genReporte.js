@@ -1,157 +1,224 @@
 var fs = require('fs');
 function buildHtml(header,body) {
-  return '<!DOCTYPE html>' + '<html><header>' + header + '</header><body>' + body + '</body></html>';
+  return '<!DOCTYPE HTML>' + '<html><head>' + header + '</head><body>' + body + '</body></html>';
 };
 
+function createDir(dirName){
+    if (fs.existsSync(dirName)) {
+      console.log("existe carpeta cliente " + dirName);
+    }else{
+      console.log("No existe carpeta cliente "+dirName);
+      fs.mkdirSync(dirName)
+      console.log("carpeta "+dirName+" creada");
+    }
+};
+
+//{ y: 300878, label: "Venezuela", infoClick:true}
+function genDataBar(jsonRep){
+  var textDataReturn = '[';
+  var numItems = jsonRep['data'].length;
+  for (var i = 0; i < numItems; i++) {
+    textDataReturn += '{ y:'+jsonRep['data'][i]['value']+', label: "'+jsonRep['data'][i]['label']+'", infoClick:'+jsonRep['data'][i]['clickable']+'}';
+    if(i+1!=numItems){
+      textDataReturn += ',';
+    }
+  };
+  textDataReturn +=']';
+  return textDataReturn;
+};
+
+//{ y: 26, name: "School Aid", infoClick:true},
+function genDataPie(jsonRep){
+  console.log("genera data de pie");
+  var textDataReturn = '[';
+  var numItems = jsonRep['data'].length;
+  //{ y: 300878, label: "Venezuela", infoClick:true}
+  for (var i = 0; i < numItems; i++) {
+    textDataReturn += '{ y:'+jsonRep['data'][i]['value']+', name: "'+jsonRep['data'][i]['label']+'", infoClick:'+jsonRep['data'][i]['clickable']+'}';
+    if(i+1!=numItems){
+      textDataReturn += ',';
+    }
+  };
+  textDataReturn +=']';
+  return textDataReturn;
+};
+
+function buildHeaderBody(objHtml,jsonRep){
+
+  var title = jsonRep['title'];
+  var textData = '';
+  if(jsonRep['type']=="bar-chart"){
+    //Bar
+    var legendX = jsonRep['legendX'];
+    var legendY = jsonRep['legendY'];
+    textData = genDataBar(jsonRep);
+    objHtml.header = '<meta charset="UTF-8">'+
+                    '<script>'+
+                    'window.onload = function () {'+
+                    'var chart = new CanvasJS.Chart("chartContainer", {'+
+                      'exportEnabled: true,'+
+                      'animationEnabled: true,'+
+                      'theme: "light2",'+
+                      'title:{'+
+                        'text: "'+title+'"'+
+                      '},'+
+                      'axisY: {'+
+                        'title: "'+legendY+'"'+
+                      '},'+
+                      'data: [{'+        
+                        'type: "column",'+
+                        'click: onClick,'+
+                        'showInLegend: true,'+
+                        'legendMarkerColor: "grey",'+
+                        'legendText: "'+legendX+'",'+
+                        'dataPoints: '+ textData +
+                      '}]'+
+                    '});'+
+                    'chart.render();'+
+                    'function onClick(e) {'+
+                      'if(e.dataPoint.infoClick){'+
+                        'alert(e.dataPoint.label);'+
+                        'location.href="http://www.google.com.pe";'+
+                      '}   '+
+                    '}'+
+                    '}'+
+                    '</script>';
+    objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
+            '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
+  }else if(jsonRep['type']=="pie-chart"){
+    //Pie
+    textData = genDataPie(jsonRep);
+    objHtml.header = '<meta charset="UTF-8">'+
+                      '<script>'+
+                      'window.onload = function () {'+
+                      'var chart = new CanvasJS.Chart("chartContainer", {'+
+                        'exportEnabled: true,'+
+                        'animationEnabled: true,'+
+                        'title:{'+
+                          'text: "'+title+'"'+
+                        '},'+
+                        'data: [{'+
+                          'click: onClick,'+
+                          'type: "pie",'+
+                          'showInLegend: true,'+
+                          'toolTipContent: "{name}: <strong>{y}%</strong>",'+
+                          'indexLabel: "{name} - {y}%",'+
+                          'dataPoints:'+ textData +
+                        '}]'+
+                      '});'+
+                      'chart.render();'+
+                      '};'+
+                      'function onClick(e) {'+
+                        'alert(e.dataPoint.name);'+
+                        'location.href="http://www.google.com.pe";'+
+                      '}'+
+                      '</script>';
+    objHtml.body=   '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
+                    '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
+  }else if(jsonRep['type']=="line-chart"){
+    //Line
+    objHtml.header= '<meta charset="UTF-8">'+
+                    '<script>'+
+                    'window.onload = function () {'+
+                    'var chart = new CanvasJS.Chart("chartContainer", {'+
+                      'animationEnabled: true,'+
+                      'exportEnabled: true,'+
+                      'title:{'+
+                        'text: "Gold Medals Won in Olympics"'+             
+                      '},'+ 
+                      'axisY:{'+
+                        'title: "Number of Medals"'+
+                      '},'+
+                      'toolTip: {'+
+                        'shared: true'+
+                      '},'+
+                      'legend:{'+
+                        'cursor:"pointer",'+
+                        'itemclick: toggleDataSeries'+
+                      '},'+
+                      'data: [{'+
+                        'click: onClick,'+        
+                        'type: "spline",'+  
+                        'name: "US",'+        
+                        'showInLegend: true,'+
+                        'dataPoints: ['+
+                          '{ label: "Atlanta 1996" , y: 44 },'+     
+                          '{ label:"Sydney 2000", y: 37 },'+     
+                          '{ label: "Athens 2004", y: 36 },'+     
+                          '{ label: "Beijing 2008", y: 36 },'+     
+                          '{ label: "London 2012", y: 46 },'+
+                          '{ label: "Rio 2016", y: 46 }'+
+                        ']'+
+                      '},'+ 
+                      '{'+
+                        'click: onClick,'+ 
+                        'type: "spline",'+
+                        'name: "China",'+        
+                        'showInLegend: true,'+
+                        'dataPoints: ['+
+                          '{ label: "Atlanta 1996" , y: 16 },'+     
+                          '{ label:"Sydney 2000", y: 28 },'+     
+                          '{ label: "Athens 2004", y: 32 },'+     
+                          '{ label: "Beijing 2008", y: 48 },'+     
+                          '{ label: "London 2012", y: 38 },'+
+                          '{ label: "Rio 2016", y: 26 }'+
+                        ']'+
+                      '}]'+
+                    '});'+
+                    'chart.render();'+
+                    'function toggleDataSeries(e) {'+
+                      'if(typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {'+
+                        'e.dataSeries.visible = false;'+
+                      '}'+
+                      'else {'+
+                        'e.dataSeries.visible = true;'+            
+                      '}'+
+                      'chart.render();'+
+                    '}'+
+                    '};'+
+                    'function onClick(e) {'+
+                      'alert(e.dataPoint.label +" - "+ e.dataPoint.y + " - " + e.dataSeries.name);'+
+                      'location.href="http://www.google.com.pe";'+
+                    '}'+
+                    '</script>';
+    objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
+            '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
+  }else{
+    return "No existe ese reporte";
+  }
+}
+
 module.exports={
-	generateReport: function(objData){
-		var idCliente = (objData._clientId);
+  
+	generateReport: function(jsonData){
+		var idCliente = jsonData['clientID'];
+    var typeRep = jsonData["type"];
     var idPage = new Date().getTime().toString();
     var urlReturn = '';
-    //var dirName ='../../reporteCliente/'+idCliente;
-    var dirName ='../../../var/www/html/reporteCliente/'+idCliente;
-    //console.log(dirName);
+    //localhost
+    var dirName ='./'+idCliente;
+    //servidor
+    //var dirName ='../../../var/www/html/reporteCliente/'+idCliente;
+    
     var dirAndPage = dirName+"/"+idPage+".html";
-    var header='';
-    var body = '';
+    var paramHtml ={header:'',body:''};
+    //var header='';
+    //var body = '';
 
-    if (fs.existsSync(dirName)) {
-      console.log("existe carpeta cliente " + idCliente);
-    }else{
-      console.log("No existe carpeta cliente "+idCliente);
-      fs.mkdirSync(dirName)
-      console.log("carpeta "+idCliente+" creada");
-    }
-    var typeRep = objData._type;
+    createDir(dirName);
 
-    if(typeRep=="bar-chart"){
-      //Bar
-      header = '<meta charset="UTF-8">'+
-                '<script>'+
-                'window.onload = function () {'+
-                'var chart = new CanvasJS.Chart("chartContainer", {'+
-                  'animationEnabled: true,'+
-                  'title:{'+
-                    'text:"Fortune 500 Companies by Country"'+
-                  '},'+
-                  'axisX:{'+
-                    'interval: 1'+
-                  '},'+
-                  'axisY2:{'+
-                    'interlacedColor: "rgba(1,77,101,.2)",'+
-                    'gridColor: "rgba(1,77,101,.1)",'+
-                    'title: "Number of Companies"'+
-                  '},'+
-                  'data: [{'+
-                    'type: "bar",'+
-                    'name: "companies",'+
-                    'axisYType: "secondary",'+
-                    'color: "#014D65",'+
-                    'dataPoints: ['+
-                      '{ y: 3, label: "Sweden" },'+
-                      '{ y: 7, label: "Taiwan" },'+
-                      '{ y: 5, label: "Russia" },'+
-                      '{ y: 9, label: "Spain" },'+
-                      '{ y: 7, label: "Brazil" },'+
-                      '{ y: 7, label: "India" },'+
-                      '{ y: 9, label: "Italy" },'+
-                      '{ y: 8, label: "Australia" },'+
-                      '{ y: 11, label: "Canada" },'+
-                      '{ y: 15, label: "South Korea" },'+
-                      '{ y: 12, label: "Netherlands" },'+
-                      '{ y: 15, label: "Switzerland" },'+
-                      '{ y: 25, label: "Britain" },'+
-                      '{ y: 28, label: "Germany" },'+
-                      '{ y: 29, label: "France" },'+
-                      '{ y: 52, label: "Japan" },'+
-                      '{ y: 103, label: "China" },'+
-                      '{ y: 134, label: "US" }'+
-                    ']'+
-                  '}]'+
-                '});'+
-                'chart.render();'+
-                '}'+
-                '</script>';
-      body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-              '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
-    }else if(typeRep=="pie-chart"){
-      //Pie
-      header = '<meta charset="UTF-8">'+
-                '<script>'+
-                'window.onload = function() {'+
-                'var chart = new CanvasJS.Chart("chartContainer", {'+
-                  'animationEnabled: true,'+
-                  'title: {'+
-                    'text: "Desktop Search Engine Market Share - 2016"'+
-                  '},'+
-                  'data: [{'+
-                    'type: "pie",'+
-                    'startAngle: 240,'+
-                    'yValueFormatString: "##0.00\'%\'",'+
-                    'indexLabel: "{label} {y}",'+
-                    'dataPoints: ['+
-                      '{y: 79.45, label: "Google"},'+
-                      '{y: 7.31, label: "Bing"},'+
-                      '{y: 7.06, label: "Baidu"},'+
-                      '{y: 4.91, label: "Yahoo"},'+
-                      '{y: 1.26, label: "Others"}'+
-                    ']'+
-                  '}]'+
-                '});'+
-                'chart.render();'+
-                '}'+
-                '</script>';
-      body=  '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-              '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
-    }else if(typeRep=="line-chart"){
-      //Line
-      header='<meta charset="UTF-8">'+
-              '<script>'+
-              'window.onload = function () {'+
-              'var chart = new CanvasJS.Chart("chartContainer", {'+
-                'animationEnabled: true,'+
-                'theme: "light2",'+
-                'title:{'+
-                  'text: "Simple Line Chart"'+
-                '},'+
-                'axisY:{'+
-                  'includeZero: false'+
-                '},'+
-                'data: [{'+        
-                  'type: "line",'+       
-                  'dataPoints: ['+
-                    '{ y: 450 },'+
-                    '{ y: 414},'+
-                    '{ y: 520, indexLabel: "highest",markerColor: "red", markerType: "triangle" },'+
-                    '{ y: 460 },'+
-                    '{ y: 450 },'+
-                    '{ y: 500 },'+
-                    '{ y: 480 },'+
-                    '{ y: 480 },'+
-                    '{ y: 410 , indexLabel: "lowest",markerColor: "DarkSlateGrey", markerType: "cross" },'+
-                    '{ y: 500 },'+
-                    '{ y: 480 },'+
-                    '{ y: 510 }'+
-                  ']'+
-                '}]'+
-              '});'+
-              'chart.render();'+
-              '}'+
-              '</script>';
-      body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-              '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
-    }else{
-      return "no existe ese reporte";
-    }
+    buildHeaderBody(paramHtml,jsonData);
 
     var stream = fs.createWriteStream(dirAndPage);
     stream.once('open', function(fd) {
-      var html = buildHtml(header,body);
+      var html = buildHtml(paramHtml.header,paramHtml.body);
       stream.end(html);
     });
-
-    return urlReturn = "http://ec2-54-172-254-2.compute-1.amazonaws.com/reporteCliente/"+idCliente+"/"+idPage+".html";
-    //return "http://localhost:3300/"+idCliente+"/"+idPage+".html";
+    //servidor
+    //return urlReturn = "http://ec2-54-172-254-2.compute-1.amazonaws.com/reporteCliente/"+idCliente+"/"+idPage+".html";
+    //localhost
+    return "http://localhost:3300/"+idCliente+"/"+idPage+".html";
   	}
+
 }
 

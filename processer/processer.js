@@ -9,8 +9,10 @@ module.exports={
 			return "Puede pedir 3 tipos de reportes: bar-chart, pie-chart y line-chart";
 		}else{
 		    report = new Reporte(str);
-			//console.log("json="+str);
-			return generador.generateReport(report);		
+			//Con los datos de json en str, se hacen las consultas y se forma un nuevo json que se enviará al reporteador.
+
+			var jsonGenerado = JSON.parse('{"clientID":12345678,"title":"titulo para el line","type":"line-chart","legendX":"","legendY":"leyenda de Y","data":[{"label":"linea 1","value":0,"clickable":false,"title":"","type":"pie-chart","legendX":"","legendY":"","data":[{"label":"fecha 1","value":44,"clickable":true,"title":"titulo para el pie de fecha 1 - linea 1","legendX":"","legendY":"","data":[{"label":"datos 1","value":34},{"label":"datos 1.1","value":90}]},{"label":"fecha 2","value":37,"clickable":true,"title":"titulo para el pie de fecha 2 - linea 1","legendX":"","legendY":"","data":[{"label":"datos 2","value":34}]}]},{"label":"linea 2","value":0,"clickable":false,"title":"","type":"pie-chart","legendX":"","legendY":"","data":[{"label":"fecha 1","value":16,"clickable":true,"title":"titulo para el pie de fecha 1 - linea 2","legendX":"","legendY":"","data":[{"label":"datos 3","value":45}]},{"label":"fecha 2","value":28,"clickable":true,"title":"titulo para el pie de fecha 2 - linea 2","legendX":"","legendY":"","data":[{"label":"datos 4","value":66}]}]}]}');
+			return generador.generateReport(jsonGenerado);		
 		}
 		
 	}
