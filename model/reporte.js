@@ -1,4 +1,5 @@
 var mysql= require('mysql');
+
 var con =mysql.createConnection({
 	host:"dbiot.clnhdetlnsuw.us-east-1.rds.amazonaws.com",
 	user:"jjarenas26",
@@ -6,7 +7,7 @@ var con =mysql.createConnection({
 	database: "dbiot"
 })
 
-function queryReportNivel2(str,param,callback){
+function queryReportNivel2(str,repJson,param,callback){
 	var key,parameter,operation;
 	if(str["key2"].localeCompare("cliente")==0){
 		key="idCliente";
@@ -27,12 +28,12 @@ function queryReportNivel2(str,param,callback){
 		condition=" idProducto = "+param;
 	}
 	if(str["key2"].localeCompare("tiempo")==0){
-		query="SELECT concat("+key+") as "+str["key2"]+", "+operation+"("+parameter+")"+
+		query="SELECT concat("+key+") as "+str["key2"]+", "+operation+"("+parameter+") as valor"+
 		" FROM ventas "+
 		"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
 		+"' as DATE) and "+ condition+" GROUP BY "+key;
 	}else{
-		query="SELECT "+key+" as "+str["key2"]+", "+operation+"("+parameter+")"+
+		query="SELECT "+key+" as "+str["key2"]+", "+operation+"("+parameter+") as valor"+
 		" FROM ventas "+
 		"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
 		+"' as DATE) and "+ condition+" GROUP BY "+key;
@@ -45,7 +46,7 @@ function queryReportNivel2(str,param,callback){
 	});
 }
 
-function queryReportNivel1(str,callback){
+function queryReportNivel1(str,repJson,callback){
 	var key,parameter,operation;
 	parameter=str["param"]["type"];
 	operation=str["param"]["operation"];
@@ -58,45 +59,79 @@ function queryReportNivel1(str,callback){
 	}
 	var query;
 	if(str["key1"].localeCompare("tiempo")==0){
-		query="SELECT concat("+key+") as "+str["key1"]+", "+operation+"("+parameter+")"+
+		query="SELECT concat("+key+") as "+str["key1"]+", "+operation+"("+parameter+") as valor"+
 		" FROM ventas "+
 		"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
 		+"' as DATE) GROUP BY "+key;
 	}else{
-		query="SELECT "+key+" as "+str["key1"]+", "+operation+"("+parameter+")"+
+		query="SELECT "+key+" as "+str["key1"]+", "+operation+"("+parameter+") as valor"+
 		" FROM ventas "+
 		"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
 		+"' as DATE) GROUP BY "+key;
 	}
 	con.query(query,function(err,result){
 		if(err)
-			callback(err,null);
-		else
-			callback(null,result);
+			callback(err,null,repJson);
+		else{
+			callback(null,result,repJson);
+		}
 	});
 }
 
 
 function Reporte(str){
-	this._clientId=str["clientID"];
-	this._type=str['type1'];
-	queryReportNivel1(str,function(err,data){
+	var repJson ={};
+	repJson["clientID"]=str["clientID"];
+	repJson["title"]="";
+	repJson["type"]=str["type1"];
+	if(str["type1"].localeCompare("pie-chart")){
+		repJson["legendX"]="";
+		repJson["legendY"]="";
+	}else if(str["type1"].localeCompare("bar-chart")){
+		repJson["legendX"]=str["key1"];
+		repJson["legendY"]=str["param"]["type"];
+	}else {
+		repJson["legendX"]="";
+		repJson["legendY"]=str["param"]["type"];
+	}
+	repJson["data"]= [];
+	//console.log(repJson);
+	queryReportNivel1(str,repJson,function(err,data,repJson){
+		//console.log(repJson);
 		if(err){
 			console.log(err);
 		}
 		else{
 			console.log("query realizado");
-			console.log(data);	
-			Object.keys(data).forEach(function(key){
+			var i=0;
+			//console.log(data);	
+			Object.keys(data).forEach(function(key,repJson){
+				console.log(repJson);
 				var row;
-				if(str["key1"].localeCompare("producto")==0)
+				var part={};
+				if(str["key1"].localeCompare("producto")==0){
 					row=data[key].producto;
-				else if(str["key1"].localeCompare("cliente")==0)
+					part["label"]="Producto";
+				}
+				else if(str["key1"].localeCompare("cliente")==0){
 					row= data[key].cliente;
-				else
+					part["label"]="Cliente";
+				}
+				else{
 					row=data[key].tiempo;
-				console.log(row);
-				queryReportNivel2(str,row,function(err,data){
+					part["label"]="Tiempo";
+				}
+				//console.log(row);
+				//console.log(data[key].valor);
+				part["value"]=data[key].valor;
+				part["clickable"]="";
+				part["title"]="";
+				part["type"]="";
+				part["legendX"]="";
+				part["legendY"]="";
+				
+				//console.log(part);
+				queryReportNivel2(str,repJson,row,function(err,data){
 					if(err){
 							console.log(err);
 					}
@@ -105,9 +140,13 @@ function Reporte(str){
 						console.log(data);
 					}
 				});
+				repJson["data"].push(part);
+				i++;
 			});
 		}
 	});
+	repJson=JSON.stringify(repJson);
+	console.log(repJson);
 };
 
 
