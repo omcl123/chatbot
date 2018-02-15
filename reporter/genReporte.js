@@ -14,7 +14,7 @@ function createDir(dirName){
 };
 
 //{ y: 300878, label: "Venezuela", infoClick:true}
-function genDataBarAndChilds(jsonRep,lastGraph){
+function genDataBarAndChilds(jsonRep,lastGraph,dirName,namePage){
   var textDataReturn = '[';
   var numItems = jsonRep['data'].length;
   for (var i = 0; i < numItems; i++) {
@@ -24,6 +24,11 @@ function genDataBarAndChilds(jsonRep,lastGraph){
       textDataReturn += ', infoClick: false';
     }else{
       textDataReturn += ', infoClick:'+jsonRep['data'][i]['clickable'];
+      var paramHtmlChild ={header:'',body:''};
+      var newNamePage = namePage +"-" +jsonRep['data'][i]['label'];
+      var newdirAndPage = dirName+"/"+newNamePage+".html";
+      buildHeaderBody(paramHtmlChild,jsonRep['data'][i],dirName,newNamePage,true);
+      createPage(newdirAndPage,paramHtmlChild);
     }
 
     textDataReturn += '}';
@@ -36,7 +41,7 @@ function genDataBarAndChilds(jsonRep,lastGraph){
 };
 
 //{ y: 26, name: "School Aid", infoClick:true},
-function genDataPieAndChilds(jsonRep,lastGraph){
+function genDataPieAndChilds(jsonRep,lastGraph,dirName,namePage){
   var textDataReturn = '[';
   var numItems = jsonRep['data'].length;
   //{ y: 300878, label: "Venezuela", infoClick:true}
@@ -47,6 +52,11 @@ function genDataPieAndChilds(jsonRep,lastGraph){
       textDataReturn += ', infoClick: false';
     }else{
       textDataReturn += ', infoClick:'+jsonRep['data'][i]['clickable'];
+      var paramHtmlChild ={header:'',body:''};
+      var newNamePage = namePage +"-" +jsonRep['data'][i]['label'];
+      var newdirAndPage = dirName+"/"+newNamePage+".html";
+      buildHeaderBody(paramHtmlChild,jsonRep['data'][i],dirName,newNamePage,true);
+      createPage(newdirAndPage,paramHtmlChild); 
     }
 
     textDataReturn += '}';
@@ -75,12 +85,11 @@ function genDataLineAndChilds(jsonRep,lastGraph,dirName,namePage){
       if(lastGraph){
         textDataReturn += ', infoClick: false';
       }else{
-        console.log("i:"+i+" j:"+j);
         textDataReturn += ', infoClick:'+jsonRep['data'][i]['data'][j]['clickable'];
         var paramHtmlChild ={header:'',body:''};
         var newNamePage = namePage +"-" +jsonRep['data'][i]['label']+"-" +jsonRep['data'][i]['data'][j]['label'];
         var newdirAndPage = dirName+"/"+newNamePage+".html"; 
-        newNamePage = encodeURI(newNamePage);
+        //newNamePage = encodeURI(newNamePage);
         buildHeaderBody(paramHtmlChild,jsonRep['data'][i]['data'][j],dirName,newNamePage,true);
         createPage(newdirAndPage,paramHtmlChild);
       }
@@ -136,7 +145,7 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                     'function onClick(e) {'+
                       'if(e.dataPoint.infoClick){'+
                         'alert(e.dataPoint.label);'+
-                        'location.href="http://www.google.com.pe";'+
+                        'location.href='+namePage+'+ "-"+ e.dataPoint.label +'+'".html";'+
                       '}   '+
                     '}'+
                     '}'+
@@ -168,7 +177,7 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                       '};'+
                       'function onClick(e) {'+
                         'alert(e.dataPoint.name);'+
-                        'location.href="http://www.google.com.pe";'+
+                        'location.href='+namePage+'+ "-"+ e.dataPoint.name +'+'".html";'+
                       '}'+
                       '</script>';
     objHtml.body=   '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
