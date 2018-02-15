@@ -14,11 +14,19 @@ function createDir(dirName){
 };
 
 //{ y: 300878, label: "Venezuela", infoClick:true}
-function genDataBar(jsonRep){
+function genDataBarAndChilds(jsonRep,lastGraph){
   var textDataReturn = '[';
   var numItems = jsonRep['data'].length;
   for (var i = 0; i < numItems; i++) {
-    textDataReturn += '{ y:'+jsonRep['data'][i]['value']+', label: "'+jsonRep['data'][i]['label']+'", infoClick:'+jsonRep['data'][i]['clickable']+'}';
+    textDataReturn += '{ y:'+jsonRep['data'][i]['value']+', label: "'+jsonRep['data'][i]['label']+ '"';
+                      
+    if(lastGraph){
+      textDataReturn += ', infoClick: false';
+    }else{
+      textDataReturn += ', infoClick:'+jsonRep['data'][i]['clickable'];
+    }
+
+    textDataReturn += '}';
     if(i+1!=numItems){
       textDataReturn += ',';
     }
@@ -28,12 +36,20 @@ function genDataBar(jsonRep){
 };
 
 //{ y: 26, name: "School Aid", infoClick:true},
-function genDataPie(jsonRep){
+function genDataPieAndChilds(jsonRep,lastGraph){
   var textDataReturn = '[';
   var numItems = jsonRep['data'].length;
   //{ y: 300878, label: "Venezuela", infoClick:true}
   for (var i = 0; i < numItems; i++) {
-    textDataReturn += '{ y:'+jsonRep['data'][i]['value']+', name: "'+jsonRep['data'][i]['label']+'", infoClick:'+jsonRep['data'][i]['clickable']+'}';
+    textDataReturn += '{ y:'+jsonRep['data'][i]['value']+', name: "'+jsonRep['data'][i]['label']+ '"';
+                      
+    if(lastGraph){
+      textDataReturn += ', infoClick: false';
+    }else{
+      textDataReturn += ', infoClick:'+jsonRep['data'][i]['clickable'];
+    }
+
+    textDataReturn += '}';
     if(i+1!=numItems){
       textDataReturn += ',';
     }
@@ -42,18 +58,34 @@ function genDataPie(jsonRep){
   return textDataReturn;
 };
 
-function genDataLine(jsonRep){
+function genDataLineAndChilds(jsonRep,lastGraph,dirName,namePage){
   var textDataReturn = '[';
   var cantLineas = jsonRep['data'].length;
   var numEpocas = -1;
 
   for (var i = 0; i < cantLineas; i++) {
-    textDataReturn += '{click: onClick,type: "spline",name: "'+ jsonRep['data'][i]['label'] +'",showInLegend: true,dataPoints: [';
+    textDataReturn += '{click: onClick,type: "spline",name: "'+ jsonRep['data'][i]['label'] +
+                      '",showInLegend: true,dataPoints: [';
 
     numEpocas = jsonRep['data'][i]['data'].length;
     for(var j = 0; j < numEpocas; j++){
 
-      textDataReturn += '{ label:"'+ jsonRep['data'][i]['data'][j]['label'] +'", y:'+ jsonRep['data'][i]['data'][j]['value'] +'}';
+      textDataReturn += '{ label:"'+ jsonRep['data'][i]['data'][j]['label'] +
+                      '", y:'+ jsonRep['data'][i]['data'][j]['value'];
+      if(lastGraph){
+        textDataReturn += ', infoClick: false';
+      }else{
+        console.log("i:"+i+" j:"+j);
+        textDataReturn += ', infoClick:'+jsonRep['data'][i]['data'][j]['clickable'];
+        var paramHtmlChild ={header:'',body:''};
+        var newNamePage = namePage +"-" +jsonRep['data'][i]['label']+"-" +jsonRep['data'][i]['data'][j]['label'];
+        var newdirAndPage = dirName+"/"+newNamePage+".html"; 
+        newNamePage = encodeURI(newNamePage);
+        buildHeaderBody(paramHtmlChild,jsonRep['data'][i]['data'][j],dirName,newNamePage,true);
+        createPage(newdirAndPage,paramHtmlChild);
+      }
+
+      textDataReturn += '}';
       if(j+1!=numEpocas){
         textDataReturn += ',';
       }
@@ -67,7 +99,7 @@ function genDataLine(jsonRep){
   return textDataReturn;
 };
 
-function buildHeaderBody(objHtml,jsonRep){
+function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
 
   var title = jsonRep['title'];
   var legendY = '';
@@ -77,7 +109,7 @@ function buildHeaderBody(objHtml,jsonRep){
     //Bar
     legendX = jsonRep['legendX'];
     legendY = jsonRep['legendY'];
-    textData = genDataBar(jsonRep);
+    textData = genDataBarAndChilds(jsonRep,lastGraph,dirName,namePage);
     objHtml.header = '<meta charset="UTF-8">'+
                     '<script>'+
                     'window.onload = function () {'+
@@ -113,7 +145,7 @@ function buildHeaderBody(objHtml,jsonRep){
             '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
   }else if(jsonRep['type']=="pie-chart"){
     //Pie
-    textData = genDataPie(jsonRep);
+    textData = genDataPieAndChilds(jsonRep,lastGraph,dirName,namePage);
     objHtml.header = '<meta charset="UTF-8">'+
                       '<script>'+
                       'window.onload = function () {'+
@@ -143,7 +175,7 @@ function buildHeaderBody(objHtml,jsonRep){
                     '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
   }else if(jsonRep['type']=="line-chart"){
     //Line
-    textData = genDataLine(jsonRep);
+    textData = genDataLineAndChilds(jsonRep,lastGraph,dirName,namePage);
     legendY = jsonRep['legendY'];
     objHtml.header= '<meta charset="UTF-8">'+
                     '<script>'+
@@ -179,7 +211,9 @@ function buildHeaderBody(objHtml,jsonRep){
                     '};'+
                     'function onClick(e) {'+
                       'alert(e.dataPoint.label +" - "+ e.dataPoint.y + " - " + e.dataSeries.name);'+
-                      'location.href="http://www.google.com.pe";'+
+                      'if(e.dataPoint.infoClick){'+
+                      //'location.href=encodeURI('+namePage+'+ "-"+ e.dataSeries.name + "-" + e.dataPoint.label'+')+".html";}'+
+                      'location.href='+namePage+'+ "-"+ e.dataSeries.name + "-" + e.dataPoint.label +'+'".html";}'+
                     '}'+
                     '</script>';
     objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
@@ -189,6 +223,13 @@ function buildHeaderBody(objHtml,jsonRep){
   }
 }
 
+function createPage(dirAndPage,paramHtml){
+  var stream = fs.createWriteStream(dirAndPage);
+  stream.once('open', function(fd) {
+    var html = buildHtml(paramHtml.header,paramHtml.body);
+    stream.end(html);
+  });
+}
 module.exports={
   
 	generateReport: function(jsonData){
@@ -203,18 +244,13 @@ module.exports={
     
     var dirAndPage = dirName+"/"+idPage+".html";
     var paramHtml ={header:'',body:''};
-    //var header='';
-    //var body = '';
 
     createDir(dirName);
 
-    buildHeaderBody(paramHtml,jsonData);
+    buildHeaderBody(paramHtml,jsonData,dirName,idPage,false);
 
-    var stream = fs.createWriteStream(dirAndPage);
-    stream.once('open', function(fd) {
-      var html = buildHtml(paramHtml.header,paramHtml.body);
-      stream.end(html);
-    });
+    createPage(dirAndPage,paramHtml);
+
     //servidor
     //return urlReturn = "http://ec2-54-172-254-2.compute-1.amazonaws.com/reporteCliente/"+idCliente+"/"+idPage+".html";
     //localhost
