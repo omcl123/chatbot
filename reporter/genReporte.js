@@ -142,12 +142,12 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                       '}]'+
                     '});'+
                     'chart.render();'+
-                    'function onClick(e) {'+
-                      'if(e.dataPoint.infoClick){'+
-                        'alert(e.dataPoint.label);'+
-                        'location.href='+namePage+'+ "-"+ e.dataPoint.label +'+'".html";'+
-                      '}   '+
-                    '}'+
+                    'function onClick(e) {';
+    if(!lastGraph){
+      objHtml.header += 'if(e.dataPoint.infoClick){location.href='+namePage+'+ "-"+ e.dataPoint.label +'+'".html";}';
+    }                 
+                     
+    objHtml.header += '}'+
                     '}'+
                     '</script>';
     objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
@@ -175,10 +175,11 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                       '});'+
                       'chart.render();'+
                       '};'+
-                      'function onClick(e) {'+
-                        'alert(e.dataPoint.name);'+
-                        'location.href='+namePage+'+ "-"+ e.dataPoint.name +'+'".html";'+
-                      '}'+
+                      'function onClick(e) {';
+    if(!lastGraph){
+      objHtml.header +=  'if(e.dataPoint.infoClick){location.href='+namePage+'+ "-"+ e.dataPoint.name +'+'".html";}'; 
+    }                                    
+    objHtml.header += '}'+
                       '</script>';
     objHtml.body=   '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
                     '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
@@ -218,12 +219,11 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                       'chart.render();'+
                     '}'+
                     '};'+
-                    'function onClick(e) {'+
-                      'alert(e.dataPoint.label +" - "+ e.dataPoint.y + " - " + e.dataSeries.name);'+
-                      'if(e.dataPoint.infoClick){'+
-                      //'location.href=encodeURI('+namePage+'+ "-"+ e.dataSeries.name + "-" + e.dataPoint.label'+')+".html";}'+
-                      'location.href='+namePage+'+ "-"+ e.dataSeries.name + "-" + e.dataPoint.label +'+'".html";}'+
-                    '}'+
+                    'function onClick(e) {';
+    if(!lastGraph){
+      objHtml.header +=  'if(e.dataPoint.infoClick){location.href='+namePage+'+ "-"+ e.dataSeries.name + "-" + e.dataPoint.label +'+'".html";}'; 
+    }
+    objHtml.header +='}'+
                     '</script>';
     objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
             '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
