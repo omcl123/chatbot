@@ -80,7 +80,7 @@ function genDataLineAndChilds(jsonRep,lastGraph,dirName,namePage){
         var paramHtmlChild ={header:'',body:''};
         var newNamePage = namePage +"-" +jsonRep['data'][i]['label']+"-" +jsonRep['data'][i]['data'][j]['label'];
         var newdirAndPage = dirName+"/"+newNamePage+".html"; 
-        newNamePage = encodeURI(newNamePage);
+        //newNamePage = encodeURI(newNamePage);
         buildHeaderBody(paramHtmlChild,jsonRep['data'][i]['data'][j],dirName,newNamePage,true);
         createPage(newdirAndPage,paramHtmlChild);
       }
