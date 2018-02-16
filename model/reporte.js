@@ -107,6 +107,18 @@ function principal(str,repJson){
 			repJson["legendY"]=str["param"]["type"];
 		}
 		repJson["data"]= [];
+		if(str["type1"].localeCompare("line-chart")==0){
+			var innerLine={};
+			innerLine["label"]="Tiempo";
+			innerLine["value"]=0;
+			innerLine["clickable"]="false";
+			innerLine["title"]="";
+			innerLine["type"]="";
+			innerLine["legendX"]="";
+			innerLine["legendY"]="";
+			innerLine["data"]=[];
+			var auxData=[];
+		}
 		//console.log(repJson);
 		console.log("query realizado");
 		var i=0;
@@ -147,43 +159,19 @@ function principal(str,repJson){
 			part["data"]=[];
 			//console.log(part);
 			//console.log(row);
-			var auxarray=[];
-			promises.push(queryReportNivel2(str,repJson,row,part).then(function(result2){
-				//console.log(result2.length);
-				//console.log(result2);
-				for(var key2 = 0; key2 < result2.length; key2++){
-					var innerpart={};
-					if(str["key2"].localeCompare("producto")==0){
-						row2=result2[key2].producto;
-						innerpart["label"]=result2[key2].producto;
-					}
-					else if(str["key2"].localeCompare("cliente")==0){
-						row2= result2[key2].cliente;
-						innerpart["label"]=result2[key2].cliente;
-					}
-					else{
-						row2=result2[key2].tiempo;
-						innerpart["label"]=result2[key2].tiempo;
-					}
-					innerpart["value"]=result2[key2].valor;
-					//console.log("innerpart")
-					//console.log(innerpart);
-					auxarray.push(innerpart);
-				}
-			}).then(function(){
-				console.log("entre aqui");
-				part["data"]=auxarray;
-				console.log(part);
-				auxarray=[];
-			}).catch(function (error){
-				console.log(error);
-			}));
-			console.log("hola");
-			repJson["data"].push(part);
 			
+			console.log("hola");
+			if(str["type1"].localeCompare("line-chart")==0){
+				auxData.push(part);
+			}else{
+				repJson["data"].push(part);
+			}
 		}
-		return Promise.all(promises);
-		
+		if(str["type1"].localeCompare("line-chart")==0){
+			innerLine["data"]=auxData
+			//console.log(innerLine);
+			repJson["data"][0]=innerLine;
+		}
 		repJson=JSON.stringify(repJson);
 		//console.log("json1:"+repJson);
 	}).catch(function (error){
