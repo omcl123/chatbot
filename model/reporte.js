@@ -71,9 +71,9 @@ function queryReportNivel1(str,repJson,callback){
 	}
 	con.query(query,function(err,result){
 		if(err)
-			callback(err,null,repJson);
+			callback(err,null);
 		else{
-			callback(null,result,repJson);
+			callback(null,result);
 		}
 	});
 }
@@ -96,7 +96,7 @@ function Reporte(str){
 	}
 	repJson["data"]= [];
 	//console.log(repJson);
-	queryReportNivel1(str,repJson,function(err,data,repJson){
+	queryReportNivel1(str,repJson,function(err,data){
 		//console.log(repJson);
 		if(err){
 			console.log(err);
@@ -105,21 +105,21 @@ function Reporte(str){
 			console.log("query realizado");
 			var i=0;
 			//console.log(data);	
-			Object.keys(data).forEach(function(key,repJson){
-				console.log(repJson);
+			for(var key = 0; key < data.length; key++){
+				//console.log(repJson);
 				var row;
 				var part={};
 				if(str["key1"].localeCompare("producto")==0){
 					row=data[key].producto;
-					part["label"]="Producto";
+					part["label"]=data[key].producto;
 				}
 				else if(str["key1"].localeCompare("cliente")==0){
 					row= data[key].cliente;
-					part["label"]="Cliente";
+					part["label"]=data[key].cliente;
 				}
 				else{
 					row=data[key].tiempo;
-					part["label"]="Tiempo";
+					part["label"]=data[key].tiempo;
 				}
 				//console.log(row);
 				//console.log(data[key].valor);
@@ -131,7 +131,7 @@ function Reporte(str){
 				part["legendY"]="";
 				
 				//console.log(part);
-				queryReportNivel2(str,repJson,row,function(err,data){
+/*				queryReportNivel2(str,repJson,row,function(err,data){
 					if(err){
 							console.log(err);
 					}
@@ -139,13 +139,14 @@ function Reporte(str){
 						//console.log("query drilldown");
 						console.log(data);
 					}
-				});
+				});*/
 				repJson["data"].push(part);
 				i++;
-			});
+			}
 		}
+		repJson=JSON.stringify(repJson);
+		console.log("jsonfinal:"+repJson);
 	});
-	repJson=JSON.stringify(repJson);
 	console.log(repJson);
 };
 
