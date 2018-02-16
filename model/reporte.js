@@ -1,5 +1,5 @@
 var mysql= require('mysql');
-
+var Promise=require('bluebird');
 var con =mysql.createConnection({
 	host:"dbiot.clnhdetlnsuw.us-east-1.rds.amazonaws.com",
 	user:"jjarenas26",
@@ -7,149 +7,179 @@ var con =mysql.createConnection({
 	database: "dbiot"
 })
 
-function queryReportNivel2(str,repJson,param,callback){
-	var key,parameter,operation;
-	if(str["key2"].localeCompare("cliente")==0){
-		key="idCliente";
-	}else if(str["key2"].localeCompare("producto")==0){
-		key="idProducto";
-	}else if(str["key2"].localeCompare("tiempo")==0){
-		key="YEAR(fechaVenta),MONTH(fechaVenta)";
-	}
-	parameter=str["param"]["type"];
-	operation=str["param"]["operation"];
-	var query;
-	var condition;
-	if(str["key1"].localeCompare("tiempo")==0){
-		condition="concat(YEAR(fechaVenta),MONTH(fechaVenta)) like "+param;
-	}else if (str["key1"].localeCompare("cliente")==0){
-		condition=" idCliente = "+param;
-	}else{
-		condition=" idProducto = "+param;
-	}
-	if(str["key2"].localeCompare("tiempo")==0){
-		query="SELECT concat("+key+") as "+str["key2"]+", "+operation+"("+parameter+") as valor"+
-		" FROM ventas "+
-		"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
-		+"' as DATE) and "+ condition+" GROUP BY "+key;
-	}else{
-		query="SELECT "+key+" as "+str["key2"]+", "+operation+"("+parameter+") as valor"+
-		" FROM ventas "+
-		"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
-		+"' as DATE) and "+ condition+" GROUP BY "+key;
-	}
-	con.query(query,function(err,result){
-		if(err)
-			callback(err,null);
-		else
-			callback(null,result);
-	});
-}
-
-function queryReportNivel1(str,repJson,callback){
-	var key,parameter,operation;
-	parameter=str["param"]["type"];
-	operation=str["param"]["operation"];
-	if(str["key1"].localeCompare("cliente")==0){
-		key="idCliente";
-	}else if(str["key1"].localeCompare("producto")==0){
-		key="idProducto";
-	}else if(str["key1"].localeCompare("tiempo")==0){
-		key="YEAR(fechaVenta),MONTH(fechaVenta)";
-	}
-	var query;
-	if(str["key1"].localeCompare("tiempo")==0){
-		query="SELECT concat("+key+") as "+str["key1"]+", "+operation+"("+parameter+") as valor"+
-		" FROM ventas "+
-		"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
-		+"' as DATE) GROUP BY "+key;
-	}else{
-		query="SELECT "+key+" as "+str["key1"]+", "+operation+"("+parameter+") as valor"+
-		" FROM ventas "+
-		"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
-		+"' as DATE) GROUP BY "+key;
-	}
-	con.query(query,function(err,result){
-		if(err)
-			callback(err,null);
-		else{
-			callback(null,result);
+function queryReportNivel2(str,repJson,param){
+	return new Promise(function(resolve,reject){
+		var key,parameter,operation;
+		if(str["key2"].localeCompare("cliente")==0){
+			key="idCliente";
+		}else if(str["key2"].localeCompare("producto")==0){
+			key="idProducto";
+		}else if(str["key2"].localeCompare("tiempo")==0){
+			key="YEAR(fechaVenta),MONTH(fechaVenta)";
 		}
+		parameter=str["param"]["type"];
+		operation=str["param"]["operation"];
+		var query;
+		var condition;
+		if(str["key1"].localeCompare("tiempo")==0){
+			condition="concat(YEAR(fechaVenta),MONTH(fechaVenta)) like "+param;
+		}else if (str["key1"].localeCompare("cliente")==0){
+			condition=" idCliente = "+param;
+		}else{
+			condition=" idProducto = "+param;
+		}
+		if(str["key2"].localeCompare("tiempo")==0){
+			query="SELECT concat("+key+") as "+str["key2"]+", "+operation+"("+parameter+") as valor"+
+			" FROM ventas "+
+			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
+			+"' as DATE) and "+ condition+" GROUP BY "+key;
+		}else{
+			query="SELECT "+key+" as "+str["key2"]+", "+operation+"("+parameter+") as valor"+
+			" FROM ventas "+
+			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
+			+"' as DATE) and "+ condition+" GROUP BY "+key;
+		}
+		//console.log(query);
+		con.query(query,function(err,result){
+			if(err)
+				reject(err);
+			else{
+				//console.log(result);
+				resolve(result);
+			}
+		});			
+	});	
+}
+
+function queryReportNivel1(str,repJson){
+	return new Promise(function(resolve,reject){
+		var key,parameter,operation;
+		parameter=str["param"]["type"];
+		operation=str["param"]["operation"];
+		if(str["key1"].localeCompare("cliente")==0){
+			key="idCliente";
+		}else if(str["key1"].localeCompare("producto")==0){
+			key="idProducto";
+		}else if(str["key1"].localeCompare("tiempo")==0){
+			key="YEAR(fechaVenta),MONTH(fechaVenta)";
+		}
+		var query;
+		if(str["key1"].localeCompare("tiempo")==0){
+			query="SELECT concat("+key+") as "+str["key1"]+", "+operation+"("+parameter+") as valor"+
+			" FROM ventas "+
+			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
+			+"' as DATE) GROUP BY "+key;
+		}else{
+			query="SELECT "+key+" as "+str["key1"]+", "+operation+"("+parameter+") as valor"+
+			" FROM ventas "+
+			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
+			+"' as DATE) GROUP BY "+key;
+		}
+		con.query(query,function(err,result){
+			if(err)
+				reject(err);
+			else{
+				
+				resolve(result);
+			}
+		});			
+		
 	});
 }
 
 
-function Reporte(str){
-	var repJson ={};
-	repJson["clientID"]=str["clientID"];
-	repJson["title"]="";
-	repJson["type"]=str["type1"];
-	if(str["type1"].localeCompare("pie-chart")){
-		repJson["legendX"]="";
-		repJson["legendY"]="";
-	}else if(str["type1"].localeCompare("bar-chart")){
-		repJson["legendX"]=str["key1"];
-		repJson["legendY"]=str["param"]["type"];
-	}else {
-		repJson["legendX"]="";
-		repJson["legendY"]=str["param"]["type"];
-	}
-	repJson["data"]= [];
+function principal(str,repJson){
 	//console.log(repJson);
-	queryReportNivel1(str,repJson,function(err,data){
-		//console.log(repJson);
-		if(err){
-			console.log(err);
+	return queryReportNivel1(str,repJson).then(function(result){
+		repJson["clientID"]=str["clientID"];
+		repJson["title"]="";
+		repJson["type"]=str["type1"];
+		if(str["type1"].localeCompare("pie-chart")==0){
+			repJson["legendX"]="";
+			repJson["legendY"]="";
+		}else if(str["type1"].localeCompare("bar-chart")==0){
+			repJson["legendX"]=str["key1"];
+			repJson["legendY"]=str["param"]["type"];
+		}else {
+			repJson["legendX"]="";
+			repJson["legendY"]=str["param"]["type"];
 		}
-		else{
-			console.log("query realizado");
-			var i=0;
-			//console.log(data);	
-			for(var key = 0; key < data.length; key++){
-				//console.log(repJson);
-				var row;
-				var part={};
-				if(str["key1"].localeCompare("producto")==0){
-					row=data[key].producto;
-					part["label"]=data[key].producto;
-				}
-				else if(str["key1"].localeCompare("cliente")==0){
-					row= data[key].cliente;
-					part["label"]=data[key].cliente;
-				}
-				else{
-					row=data[key].tiempo;
-					part["label"]=data[key].tiempo;
-				}
-				//console.log(row);
-				//console.log(data[key].valor);
-				part["value"]=data[key].valor;
-				part["clickable"]="";
-				part["title"]="";
-				part["type"]="";
+		repJson["data"]= [];
+		//console.log(repJson);
+		console.log("query realizado");
+		var i=0;
+		//console.log(data);	
+		for(var key = 0; key < result.length; key++){
+			//console.log(repJson);
+			var row;
+			var part={};
+			if(str["key1"].localeCompare("producto")==0){
+				row=result[key].producto;
+				part["label"]=result[key].producto;
+			}
+			else if(str["key1"].localeCompare("cliente")==0){
+				row= result[key].cliente;
+				part["label"]=result[key].cliente;
+			}
+			else{
+				row=result[key].tiempo;
+				part["label"]=result[key].tiempo;
+			}
+			//console.log(row);
+			//console.log(data[key].valor);
+			part["value"]=result[key].valor;
+			part["clickable"]="true";
+			part["title"]="";
+			part["type"]=str["type2"];
+			if(str["type2"].localeCompare("pie-chart")==0){
 				part["legendX"]="";
 				part["legendY"]="";
-				
-				//console.log(part);
-/*				queryReportNivel2(str,repJson,row,function(err,data){
-					if(err){
-							console.log(err);
+			}else if(str["type2"].localeCompare("bar-chart")==0){
+				part["legendX"]=str["key2"];
+				part["legendY"]=str["param"]["type"];
+			}else {
+				part["legendX"]="";
+				part["legendY"]=str["param"]["type"];
+			}
+			part["data"]=[];
+			//console.log(part);
+			//console.log(row);
+			queryReportNivel2(str,repJson,row).then(function(result2){
+				//console.log(result.length);
+				console.log(result2);
+				for(var key2 = 0; key2 < result2.length; key2++){
+					var row2;
+					var innerPart={};
+					if(str["key2"].localeCompare("producto")==0){
+						row2=result2[key2].producto;
+						innerPart["label"]=result2[key2].producto;
+					}
+					else if(str["key2"].localeCompare("cliente")==0){
+						row2= result2[key2].cliente;
+						innerPart["label"]=result2[key2].cliente;
 					}
 					else{
-						//console.log("query drilldown");
-						console.log(data);
+						row2=result2[key2].tiempo;
+						innerPart["label"]=result2[key2].tiempo;
 					}
-				});*/
-				repJson["data"].push(part);
-				i++;
-			}
+					//console.log(row2);
+					innerPart["value"]=result2[key2].valor;
+					//console.log(result[key2].valor);
+					part["data"].push(innerPart);
+				}
+			}).catch(function (error){
+				console.log(error);
+			});
+			repJson["data"].push(part);
+			i++;
 		}
 		repJson=JSON.stringify(repJson);
-		console.log("jsonfinal:"+repJson);
+		//console.log("json1:"+repJson);
+	}).catch(function (error){
+		console.log(error);
 	});
-	console.log(repJson);
 };
 
 
 
-module.exports=Reporte;
+module.exports={principal:principal};
