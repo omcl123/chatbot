@@ -178,11 +178,12 @@ function principal(str,repJson){
 			}).catch(function (error){
 				console.log(error);
 			}));
+			console.log("hola");
 			repJson["data"].push(part);
-			i++;
+			
 		}
 		return Promise.all(promises);
-		console.log(partsMay);
+		
 		repJson=JSON.stringify(repJson);
 		//console.log("json1:"+repJson);
 	}).catch(function (error){
