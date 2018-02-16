@@ -7,8 +7,9 @@ var con =mysql.createConnection({
 	database: "dbiot"
 })
 
-function queryReportNivel2(str,repJson,param){
+function queryReportNivel2(str,repJson,param,part){
 	return new Promise(function(resolve,reject){
+		//console.log(part);
 		var key,parameter,operation;
 		if(str["key2"].localeCompare("cliente")==0){
 			key="idCliente";
@@ -75,12 +76,13 @@ function queryReportNivel1(str,repJson){
 			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
 			+"' as DATE) GROUP BY "+key;
 		}
-		con.query(query,function(err,result){
+		console.log(query);
+		con.query(query,function(err,result2){
 			if(err)
 				reject(err);
 			else{
 				
-				resolve(result);
+				resolve(result2);
 			}
 		});			
 		
@@ -108,6 +110,7 @@ function principal(str,repJson){
 		//console.log(repJson);
 		console.log("query realizado");
 		var i=0;
+		var promises = [];
 		//console.log(data);	
 		for(var key = 0; key < result.length; key++){
 			//console.log(repJson);
@@ -144,35 +147,42 @@ function principal(str,repJson){
 			part["data"]=[];
 			//console.log(part);
 			//console.log(row);
-			queryReportNivel2(str,repJson,row).then(function(result2){
-				//console.log(result.length);
-				console.log(result2);
+			var auxarray=[];
+			promises.push(queryReportNivel2(str,repJson,row,part).then(function(result2){
+				//console.log(result2.length);
+				//console.log(result2);
 				for(var key2 = 0; key2 < result2.length; key2++){
-					var row2;
-					var innerPart={};
+					var innerpart={};
 					if(str["key2"].localeCompare("producto")==0){
 						row2=result2[key2].producto;
-						innerPart["label"]=result2[key2].producto;
+						innerpart["label"]=result2[key2].producto;
 					}
 					else if(str["key2"].localeCompare("cliente")==0){
 						row2= result2[key2].cliente;
-						innerPart["label"]=result2[key2].cliente;
+						innerpart["label"]=result2[key2].cliente;
 					}
 					else{
 						row2=result2[key2].tiempo;
-						innerPart["label"]=result2[key2].tiempo;
+						innerpart["label"]=result2[key2].tiempo;
 					}
-					//console.log(row2);
-					innerPart["value"]=result2[key2].valor;
-					//console.log(result[key2].valor);
-					part["data"].push(innerPart);
+					innerpart["value"]=result2[key2].valor;
+					//console.log("innerpart")
+					//console.log(innerpart);
+					auxarray.push(innerpart);
 				}
+			}).then(function(){
+				console.log("entre aqui");
+				part["data"]=auxarray;
+				console.log(part);
+				auxarray=[];
 			}).catch(function (error){
 				console.log(error);
-			});
+			}));
 			repJson["data"].push(part);
 			i++;
 		}
+		return Promise.all(promises);
+		console.log(partsMay);
 		repJson=JSON.stringify(repJson);
 		//console.log("json1:"+repJson);
 	}).catch(function (error){
