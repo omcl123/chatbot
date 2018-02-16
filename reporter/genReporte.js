@@ -242,7 +242,7 @@ function createPage(dirAndPage,paramHtml){
 module.exports={
   
 	generateReport: function(jsonData){
-		var idCliente = jsonData['clientID'];
+	var idCliente = jsonData["clientID"];
     var typeRep = jsonData["type"];
     var idPage = new Date().getTime().toString();
     var urlReturn = '';
