@@ -1,18 +1,20 @@
-var express = require("express"),bodyParser=require("body-parser");
+const express = require("express")
+const bodyParser=require("body-parser");
 var Processer = require("./processer/processer");
 
-var app = express();
+const app = express();
 app.use(bodyParser.json());
 
 app.post('/', function(request, response){
-		var url;
-		Processer.devuelveUrl(request.body,url).then(function(url){
-		//console.log("en server");
-		//console.log(url);
-		return response.send(url);
-	});
-	
+    Processer.devuelveUrl(request.body)
+    .then((url) => {
+        return response.send(url);
+    });
 });
+
+// app.get('/:idU/:idP/reporte/', function(req, res) {
+//     res.send('template.html', BD.traemeCosas(idU,IdP));
+// });
 
 app.listen("3300", function(){
   console.log('Server up');
