@@ -5,14 +5,12 @@ async function devuelveUrl(preferencesObj, url) {
   try {
     reportJson = await reporte.principal(preferencesObj);
     url = await generador.generateReport(reportJson);
-    await resolve(url);
-  }
-  catch(e) {
+
+    return url;
+  } catch (e) {
     console.log(e);
   }
-}
-
-
+};
 
 module.exports={
     devuelveUrl: devuelveUrl,
