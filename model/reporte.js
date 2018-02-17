@@ -1,184 +1,219 @@
-var mysql= require('mysql');
-var Promise=require('bluebird');
-var con =mysql.createConnection({
-	host:"dbiot.clnhdetlnsuw.us-east-1.rds.amazonaws.com",
-	user:"jjarenas26",
-	password:"jjarenas26",
-	database: "dbiot"
-})
+const Sequelize = require('sequelize');
+const db = 'dbiot';
+const user = 'jjarenas26';
+const password = 'jjarenas26';
+const host = 'dbiot.clnhdetlnsuw.us-east-1.rds.amazonaws.com';
+const dialect = 'mysql';
 
-function queryReportNivel2(str,repJson,param,part){
-	return new Promise(function(resolve,reject){
-		//console.log(part);
-		var key,parameter,operation;
-		if(str["key2"].localeCompare("cliente")==0){
-			key="idCliente";
-		}else if(str["key2"].localeCompare("producto")==0){
-			key="idProducto";
-		}else if(str["key2"].localeCompare("tiempo")==0){
-			key="YEAR(fechaVenta),MONTH(fechaVenta)";
-		}
-		parameter=str["param"]["type"];
-		operation=str["param"]["operation"];
-		var query;
-		var condition;
-		if(str["key1"].localeCompare("tiempo")==0){
-			condition="concat(YEAR(fechaVenta),MONTH(fechaVenta)) like "+param;
-		}else if (str["key1"].localeCompare("cliente")==0){
-			condition=" idCliente = "+param;
-		}else{
-			condition=" idProducto = "+param;
-		}
-		if(str["key2"].localeCompare("tiempo")==0){
-			query="SELECT concat("+key+") as "+str["key2"]+", "+operation+"("+parameter+") as valor"+
-			" FROM ventas "+
-			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
-			+"' as DATE) and "+ condition+" GROUP BY "+key;
-		}else{
-			query="SELECT "+key+" as "+str["key2"]+", "+operation+"("+parameter+") as valor"+
-			" FROM ventas "+
-			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
-			+"' as DATE) and "+ condition+" GROUP BY "+key;
-		}
-		//console.log(query);
-		con.query(query,function(err,result){
-			if(err)
-				reject(err);
-			else{
-				//console.log(result);
-				resolve(result);
-			}
-		});			
-	});	
+const sequelize = new Sequelize(db, user, password, {
+  host: host,
+  dialect: dialect,
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  },
+});
+
+// var con = mysql.createConnection({
+//     host:"dbiot.clnhdetlnsuw.us-east-1.rds.amazonaws.com",
+//     user:"jjarenas26",
+//     password:"jjarenas26",
+//     database: "dbiot"
+// })
+
+
+function queryReportNivel2(preferencesObj, param){
+    let key
+    let parameter = preferencesObj.param.type;
+    let operation = preferencesObj.param.operation;
+
+    if (preferencesObj.key2 === 'cliente') {
+        key = "idCliente";
+    }else if (preferencesObj.key2 === 'producto') {
+        key = "idProducto";
+    }else if (preferencesObj.key2 === 'tiempo') {
+        key = "YEAR(fechaVenta),MONTH(fechaVenta)";
+    }
+
+    let query;
+    let condition;
+
+    if (preferencesObj.key1 === 'tiempo') {
+        condition = `concat(YEAR(fechaVenta),MONTH(fechaVenta)) like ${param}`;
+    }else if (preferencesObj.key1 === 'cliente') {
+        condition = ` idCliente = ${param}`;
+    }else {
+        condition = ` idProducto = ${param}`;
+    }
+
+    if (preferencesObj.key2 === 'tiempo') {
+        query = `SELECT concat(${key}) as ${preferencesObj.key2}, ${operation}(${parameter}) as valor
+        FROM ventas
+        WHERE fechaVenta
+        BETWEEN CAST('${preferencesObj.start_date}' as DATE) and CAST('${preferencesObj["end_date"]}' as DATE) and ${condition}
+        GROUP BY ${key};`
+    }else {
+        query = `SELECT ${key} as ${preferencesObj["key2"]}, ${operation}(${parameter}) as valor
+        FROM ventas
+        WHERE fechaVenta
+        BETWEEN CAST('${preferencesObj.start_date}' as DATE) and CAST('${preferencesObj["end_date"]}' as DATE) and ${condition}
+        GROUP BY ${key}`;
+    }
+
+    return sequelize.query(query, { type: Sequelize.QueryTypes.SELECT });
 }
 
-function queryReportNivel1(str,repJson){
-	return new Promise(function(resolve,reject){
-		var key,parameter,operation;
-		parameter=str["param"]["type"];
-		operation=str["param"]["operation"];
-		if(str["key1"].localeCompare("cliente")==0){
-			key="idCliente";
-		}else if(str["key1"].localeCompare("producto")==0){
-			key="idProducto";
-		}else if(str["key1"].localeCompare("tiempo")==0){
-			key="YEAR(fechaVenta),MONTH(fechaVenta)";
-		}
-		var query;
-		if(str["key1"].localeCompare("tiempo")==0){
-			query="SELECT concat("+key+") as "+str["key1"]+", "+operation+"("+parameter+") as valor"+
-			" FROM ventas "+
-			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
-			+"' as DATE) GROUP BY "+key;
-		}else{
-			query="SELECT "+key+" as "+str["key1"]+", "+operation+"("+parameter+") as valor"+
-			" FROM ventas "+
-			"WHERE fechaVenta BETWEEN CAST('"+str["start_date"]+"' as DATE) and CAST('"+str["end_date"]
-			+"' as DATE) GROUP BY "+key;
-		}
-		console.log(query);
-		con.query(query,function(err,result2){
-			if(err)
-				reject(err);
-			else{
-				
-				resolve(result2);
-			}
-		});			
-		
-	});
+function queryReportNivel1(preferencesObj){
+    let key;
+    let query;
+    let parameter = preferencesObj.param.type;
+    let operation = preferencesObj.param.operation;
+
+    if (preferencesObj.key1 === 'cliente') {
+        key = 'idCliente';
+    } else if (preferencesObj.key1 === 'producto') {
+        key = 'idProducto';
+    } else if (preferencesObj.key1 === 'tiempo') {
+        key = 'YEAR(fechaVenta), MONTH(fechaVenta)';
+        query = `SELECT concat(${key}) as ${preferencesObj.key1}, ${operation}(${parameter}) as valor 
+        FROM ventas
+        WHERE fechaVenta
+        BETWEEN CAST('${preferencesObj.start_date}' as DATE) and CAST('${preferencesObj.end_date}' as DATE)
+        GROUP BY ${key}`;
+    }
+
+    if (preferencesObj.key1 !== 'tiempo') {
+        query = `SELECT ${key} as ${preferencesObj.key1}, operation(${parameter}) as valor
+        FROM ventas
+        WHERE fechaVenta
+        BETWEEN CAST('${preferencesObj.start_date}' as DATE) and CAST('${preferencesObj.end_date}' as DATE)
+        GROUP BY ${key}`;
+    }
+
+    return sequelize.query(query, { type: Sequelize.QueryTypes.SELECT });
 }
 
+const principalCallback = (response, preferencesObj, repJson) => {
+    repJson.clientID = preferencesObj.clientID;
+    repJson.title = "";
+    repJson.type = preferencesObj.type1;
 
-function principal(str,repJson){
-	//console.log(repJson);
-	return queryReportNivel1(str,repJson).then(function(result){
-		repJson["clientID"]=str["clientID"];
-		repJson["title"]="";
-		repJson["type"]=str["type1"];
-		if(str["type1"].localeCompare("pie-chart")==0){
-			repJson["legendX"]="";
-			repJson["legendY"]="";
-		}else if(str["type1"].localeCompare("bar-chart")==0){
-			repJson["legendX"]=str["key1"];
-			repJson["legendY"]=str["param"]["type"];
-		}else {
-			repJson["legendX"]="";
-			repJson["legendY"]=str["param"]["type"];
-		}
-		repJson["data"]= [];
-		if(str["type1"].localeCompare("line-chart")==0){
-			var innerLine={};
-			innerLine["label"]="Tiempo";
-			innerLine["value"]=0;
-			innerLine["clickable"]="false";
-			innerLine["title"]="";
-			innerLine["type"]="";
-			innerLine["legendX"]="";
-			innerLine["legendY"]="";
-			innerLine["data"]=[];
-			var auxData=[];
-		}
-		//console.log(repJson);
-		console.log("query realizado");
-		var i=0;
-		var promises = [];
-		//console.log(data);	
-		for(var key = 0; key < result.length; key++){
-			//console.log(repJson);
-			var row;
-			var part={};
-			if(str["key1"].localeCompare("producto")==0){
-				row=result[key].producto;
-				part["label"]=result[key].producto;
-			}
-			else if(str["key1"].localeCompare("cliente")==0){
-				row= result[key].cliente;
-				part["label"]=result[key].cliente;
-			}
-			else{
-				row=result[key].tiempo;
-				part["label"]=result[key].tiempo;
-			}
-			//console.log(row);
-			//console.log(data[key].valor);
-			part["value"]=result[key].valor;
-			part["clickable"]="true";
-			part["title"]="";
-			part["type"]=str["type2"];
-			if(str["type2"].localeCompare("pie-chart")==0){
-				part["legendX"]="";
-				part["legendY"]="";
-			}else if(str["type2"].localeCompare("bar-chart")==0){
-				part["legendX"]=str["key2"];
-				part["legendY"]=str["param"]["type"];
-			}else {
-				part["legendX"]="";
-				part["legendY"]=str["param"]["type"];
-			}
-			part["data"]=[];
-			//console.log(part);
-			//console.log(row);
-			
-			console.log("hola");
-			if(str["type1"].localeCompare("line-chart")==0){
-				auxData.push(part);
-			}else{
-				repJson["data"].push(part);
-			}
-		}
-		if(str["type1"].localeCompare("line-chart")==0){
-			innerLine["data"]=auxData
-			//console.log(innerLine);
-			repJson["data"][0]=innerLine;
-		}
-		repJson=JSON.stringify(repJson);
-		//console.log("json1:"+repJson);
-	}).catch(function (error){
-		console.log(error);
-	});
+    if (preferencesObj.type1 === 'pie-chart') {
+        repJson.legendX = "";
+        repJson.legendY = "";
+    } else if (preferencesObj.type1 === 'bar-chart') {
+        repJson.legendX = preferencesObj.key1;
+        repJson.legendY = preferencesObj.param.type;
+    } else {
+        repJson.legendX = "";
+        repJson.legendY = preferencesObj.param.type;
+    }
+
+    repJson.data = [];
+
+    if (preferencesObj.type1 === 'line-chart'){
+        var innerLine = {
+            label: 'Tiempo',
+            value: 0,
+            clickable: false,
+            title: '',
+            legendX: '',
+            legendY: '',
+            data: [],
+        };
+        var auxData=[];
+    }
+
+    return Promise.all(response.map((item) => {
+        let row;
+        let part = {};
+
+        if (preferencesObj.key1 == 'producto'){
+            row = item.producto;
+            part.label = item.producto;
+        } else if (preferencesObj.key1 === 'cliente'){
+            row = item.cliente;
+            part.label = item.cliente;
+        } else {
+            row = item.tiempo;
+            part.label = item.tiempo;
+        }
+
+        part.value = item.valor;
+        part.clickable = true;
+        part.title = "";
+        part.type = preferencesObj.type2;
+
+        if (preferencesObj.type2 === 'pie-chart') {
+            part.legendX = "";
+            part.legendY = "";
+        } else if (preferencesObj.type2 === 'bar-chart') {
+            part.legendX =preferencesObj.key2;
+            part.legendY =preferencesObj.param.type;
+        } else {
+            part.legendX = "";
+            part.legendY = preferencesObj.param.type;
+        }
+
+        part.data = [];
+
+        return queryReportNivel2(preferencesObj, row)
+        .then(queryResponse => {
+            let auxarray = queryResponse.map(item => {
+                let innerpart = {};
+
+                if (preferencesObj.key2 === 'producto') {
+                    innerpart.label = item.producto;
+                }
+                else if (preferencesObj.key2 === 'cliente'){
+                    innerpart.label = item.cliente;
+                } else {
+                    innerpart.label = item.tiempo;
+                }
+
+                innerpart.value = item.valor;
+
+                return innerpart;
+            });
+
+            return auxarray;
+        })
+        .then(auxarray => {
+            part.data = auxarray;
+
+            return part;
+        })
+    }))
+    .then(arrayOfParts => {
+        if (preferencesObj.type1 === 'line-chart'){
+            innerLine.data = arrayOfParts;
+            repJson.data[0] = innerLine;
+        } else {
+            repJson.data = arrayOfParts;
+        }
+
+        console.log("============================================");
+        console.log(repJson);
+
+        return repJson;
+    });
+}
+
+function principal(preferencesObj) {
+    let repJson = {};
+
+    return queryReportNivel1(preferencesObj)
+        .then((response) => principalCallback(response, preferencesObj, repJson))
+        .catch((error) => {
+            console.log(error);
+            throw error;
+        });
 };
 
 
 
-module.exports={principal:principal};
+module.exports = {
+    principal: principal
+};
