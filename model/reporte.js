@@ -194,8 +194,8 @@ const principalCallback = (response, preferencesObj, repJson) => {
             repJson.data = arrayOfParts;
         }
 
-        console.log("============================================");
-        console.log(repJson);
+        //console.log("============================================");
+        //console.log(repJson);
 
         return repJson;
     });
