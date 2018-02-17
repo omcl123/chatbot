@@ -1,20 +1,16 @@
 const generador= require("../reporter/genReporte");
 const reporte = require("../model/reporte");
 
-function devuelveUrl(preferencesObj, url) {
-    return new Promise(function(resolve, reject) {
-        reporte.principal(preferencesObj)
-        .then(reportJson => generador.generateReport(reportJson))
-        .then(url => resolve(url))
-        .catch((err) => {
-            console.log(err);
-            reject(err);
-            throw error;
-        });
-    });
-}
+async function devuelveUrl(preferencesObj, url) {
+  try {
+    reportJson = await reporte.principal(preferencesObj);
+    url = await generador.generateReport(reportJson);
 
-
+    return url;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 module.exports={
     devuelveUrl: devuelveUrl,
