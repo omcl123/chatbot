@@ -85,7 +85,7 @@ function queryReportNivel1(preferencesObj){
     }
 
     if (preferencesObj.key1 !== 'tiempo') {
-        query = `SELECT ${key} as ${preferencesObj.key1}, operation(${parameter}) as valor
+        query = `SELECT ${key} as ${preferencesObj.key1}, ${operation}(${parameter}) as valor
         FROM ventas
         WHERE fechaVenta
         BETWEEN CAST('${preferencesObj.start_date}' as DATE) and CAST('${preferencesObj.end_date}' as DATE)
@@ -181,8 +181,20 @@ const principalCallback = (response, preferencesObj, repJson) => {
             return auxarray;
         })
         .then(auxarray => {
-            part.data = auxarray;
-
+            if(preferencesObj.type2 === 'line-chart'){
+                let partInnerLine = {};
+                partInnerLine.label = 'Tiempo';
+                partInnerLine.value = 0;
+                partInnerLine.clickable = false;
+                partInnerLine.title = '';
+                partInnerLine.type = '';
+                partInnerLine.legendX = '';
+                partInnerLine.legendY = '';
+                partInnerLine.data = auxarray;
+                part.data.push(partInnerLine);
+            } else {
+                part.data = auxarray; 
+            }
             return part;
         })
     }))
