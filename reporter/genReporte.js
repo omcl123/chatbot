@@ -1,4 +1,5 @@
 var fs = require('fs');
+
 function buildHtml(header,body) {
   return '<!DOCTYPE HTML>' + '<html><head>' + header + '</head><body>' + body + '</body></html>';
 };
@@ -19,7 +20,6 @@ function genDataBarAndChilds(jsonRep,lastGraph,dirName,namePage){
   var numItems = jsonRep['data'].length;
   for (var i = 0; i < numItems; i++) {
     textDataReturn += '{ y:'+jsonRep['data'][i]['value']+', label: "'+jsonRep['data'][i]['label']+ '"';
-                      
     if(lastGraph){
       textDataReturn += ', infoClick: false';
     }else{
@@ -109,7 +109,6 @@ function genDataLineAndChilds(jsonRep,lastGraph,dirName,namePage){
 };
 
 function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
-
   var title = jsonRep['title'];
   var legendY = '';
   var legendX = '';
@@ -132,7 +131,7 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                       'axisY: {'+
                         'title: "'+legendY+'"'+
                       '},'+
-                      'data: [{'+        
+                      'data: [{'+
                         'type: "column",'+
                         'click: onClick,'+
                         'showInLegend: true,'+
@@ -145,8 +144,7 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                     'function onClick(e) {';
     if(!lastGraph){
       objHtml.header += 'if(e.dataPoint.infoClick){location.href='+namePage+'+ "-"+ e.dataPoint.label +'+'".html";}';
-    }                 
-                     
+    }
     objHtml.header += '}'+
                     '}'+
                     '</script>';
@@ -178,7 +176,7 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                       'function onClick(e) {';
     if(!lastGraph){
       objHtml.header +=  'if(e.dataPoint.infoClick){location.href='+namePage+'+ "-"+ e.dataPoint.name +'+'".html";}'; 
-    }                                    
+    }
     objHtml.header += '}'+
                       '</script>';
     objHtml.body=   '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
@@ -194,7 +192,7 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                       'animationEnabled: true,'+
                       'exportEnabled: true,'+
                       'title:{'+
-                        'text: "'+title+'"'+             
+                        'text: "'+title+'"'+
                       '},'+ 
                       'axisY:{'+
                         'title: "'+legendY+'"'+
@@ -214,7 +212,7 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
                         'e.dataSeries.visible = false;'+
                       '}'+
                       'else {'+
-                        'e.dataSeries.visible = true;'+            
+                        'e.dataSeries.visible = true;'+
                       '}'+
                       'chart.render();'+
                     '}'+
@@ -239,10 +237,10 @@ function createPage(dirAndPage,paramHtml){
     stream.end(html);
   });
 }
+
 module.exports={
-  
-	generateReport: function(jsonData){
-	var idCliente = jsonData["clientID"];
+  generateReport: function(jsonData) {
+    var idCliente = jsonData["clientID"];
     var typeRep = jsonData["type"];
     var idPage = new Date().getTime().toString();
     var urlReturn = '';
@@ -263,8 +261,6 @@ module.exports={
     //servidor
     //return urlReturn = "http://ec2-54-172-254-2.compute-1.amazonaws.com/reporteCliente/"+idCliente+"/"+idPage+".html";
     //localhost
-    return "http://localhost:3300/"+idCliente+"/"+idPage+".html";
-  	}
-
+    return "http://localhost:3300/" + idCliente + "/" + idPage + ".html";
+  }
 }
-
