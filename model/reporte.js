@@ -97,7 +97,8 @@ function queryReportNivel1(preferencesObj){
 
 const principalCallback = (response, preferencesObj, repJson) => {
     repJson.clientID = preferencesObj.clientID;
-    repJson.title = "";
+    repJson.date = new Date();
+    repJson.title = `${preferencesObj.param.operation} of ${preferencesObj.param.type} grouped by ${preferencesObj.key1} from ${preferencesObj.start_date} to ${preferencesObj.end_date}`;
     repJson.type = preferencesObj.type1;
 
     if (preferencesObj.type1 === 'pie-chart') {
@@ -143,7 +144,8 @@ const principalCallback = (response, preferencesObj, repJson) => {
 
         part.value = item.valor;
         part.clickable = true;
-        part.title = "";
+        part.title = 
+        `${preferencesObj.key1} ${part.label}: ${preferencesObj.param.operation} of ${preferencesObj.param.type} grouped by ${preferencesObj.key2} from ${preferencesObj.start_date} to ${preferencesObj.end_date}`;
         part.type = preferencesObj.type2;
 
         if (preferencesObj.type2 === 'pie-chart') {
