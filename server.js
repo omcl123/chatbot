@@ -19,6 +19,12 @@ app.post('/block', function(request, response){
     });
 });
 
+app.post('/alert', function(request, response){
+    Processer.devuelveNotificacion(request.body)
+    .then((notf) => {
+        return response.send(notf);
+    });
+});
 // app.get('/:idU/:idP/reporte/', function(req, res) {
 //     res.send('template.html', BD.traemeCosas(idU,IdP));
 // });
