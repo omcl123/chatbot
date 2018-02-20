@@ -5,10 +5,17 @@ var Processer = require("./processer/processer");
 const app = express();
 app.use(bodyParser.json());
 
-app.post('/', function(request, response){
+app.post('/report', function(request, response){
     Processer.devuelveUrl(request.body)
     .then((url) => {
         return response.send(url);
+    });
+});
+
+app.post('/block', function(request, response){
+    Processer.devuelveBloque(request.body)
+    .then((jsonBlock) => {
+        return response.send(jsonBlock);
     });
 });
 
