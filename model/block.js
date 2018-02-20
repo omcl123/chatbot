@@ -45,14 +45,14 @@ function queryblock(preferencesObj){
         ind = 'cantProd';
     }
 
-    if (preferencesObj.key2.id == -1){
+    if (preferencesObj.key2.id == -1) {
         query =`SELECT ${key1} as ${key1}, ${nom1} as ${nom1}, sum(${ind}) as ${ind}
         FROM ventas
         WHERE fechaVenta
         BETWEEN CAST('${preferencesObj.start_date}' as DATE) and CAST('${preferencesObj.end_date}' as DATE)
         GROUP BY ${key1}
         ORDER BY sum(${ind}) DESC LIMIT ${top}`;
-    }else{
+    } else {
         query =`SELECT ${key1} as ${key1}, ${nom1} as ${nom1}, sum(${ind}) as ${ind}
         FROM ventas
         WHERE fechaVenta
@@ -65,8 +65,42 @@ function queryblock(preferencesObj){
 }
 
 const principalCallback = (response, preferencesObj, jsonBlock) => {
-    console.log(response);
-    return jsonBlock;
+	jsonBlock.clientID = preferencesObj.clientID ;
+	jsonBlock.date = new Date() ;
+	jsonBlock.start_date = preferencesObj.start_date ;
+	jsonBlock.end_date = preferencesObj.end_date ;
+	if (preferencesObj.key2.id == -1) {
+		jsonBlock.title = `Top ${preferencesObj.top} ${preferencesObj.key1.type}s having most ${preferencesObj.key1.ind}`;
+	} else {
+		jsonBlock.title = 
+		`Top ${preferencesObj.top} ${preferencesObj.key1.type}s having most ${preferencesObj.key1.ind} with ${preferencesObj.key2.type} ID = ${preferencesObj.key2.id}`;
+	}
+	preferencesObj.data = [];
+
+	return Promise.all(response.map((item) => {
+        let part = {};
+
+    	if (preferencesObj.key1.type === 'cliente') {
+    		part.idCliente = item.idCliente ;
+    		part.nombCliente = item.nombCliente ;
+    	} else {
+    		part.idProducto = item.idProducto ;
+    		part.nombProd = item.nombProd ;
+    	}
+
+    	if (preferencesObj.key1.type === 'ventas') {
+    		part.subtotal = item.subtotal ;
+    	} else {
+    		part.cantProd = item.cantProd ;
+    	}
+
+        return part;
+    }))
+    .then(arrayOfParts => {
+        jsonBlock.data = arrayOfParts ;
+        console.log(jsonBlock) ;
+        return jsonBlock;
+    });
 }
 
 function principal(preferencesObj) {
