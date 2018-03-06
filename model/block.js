@@ -19,33 +19,33 @@ const sequelize = new Sequelize(db, user, password, {
 function queryblock(preferencesObj){
     let query;
     let key1 ;
-    let key2 = preferencesObj.key2.type;
-    let key2Id = preferencesObj.key2.id;
+    let key2 = preferencesObj.key2Type;
+    let key2Id = preferencesObj.key2Id;
     let top = preferencesObj.top;
     let nom1;
     let ind;
 
-    if (preferencesObj.key1.type === 'cliente') {
+    if (preferencesObj.key1Type === 'cliente') {
         key1 = 'idCliente';
         nom1 = 'nombCliente';
-    } else if (preferencesObj.key1.type === 'producto') {
+    } else if (preferencesObj.key1Type === 'producto') {
         key1 = 'idProducto';
         nom1 = 'nombProd';
     } 
 
-    if (preferencesObj.key2.type === 'cliente') {
+    if (preferencesObj.key2Type === 'cliente') {
         key2 = 'idCliente';
-    } else if (preferencesObj.key2.type === 'producto') {
+    } else if (preferencesObj.key2Type === 'producto') {
         key2 = 'idProducto';
     }
 
-    if (preferencesObj.key1.ind === 'ventas') {
+    if (preferencesObj.key1Ind === 'ventas') {
         ind = 'subtotal';
-    } else if (preferencesObj.key1.ind === 'cantProd') {
+    } else if (preferencesObj.key1Ind === 'cantProd') {
         ind = 'cantProd';
     }
 
-    if (preferencesObj.key2.id == -1) {
+    if (preferencesObj.key2Id == -1) {
         query =`SELECT ${key1} as ${key1}, ${nom1} as ${nom1}, sum(${ind}) as ${ind}
         FROM ventas
         WHERE fechaVenta
@@ -69,18 +69,17 @@ const principalCallback = (response, preferencesObj, jsonBlock) => {
 	jsonBlock.date = new Date() ;
 	jsonBlock.start_date = preferencesObj.start_date ;
 	jsonBlock.end_date = preferencesObj.end_date ;
-	if (preferencesObj.key2.id == -1) {
-		jsonBlock.title = `Top ${preferencesObj.top} ${preferencesObj.key1.type}s having most ${preferencesObj.key1.ind}`;
+	if (preferencesObj.key2Id == -1) {
+		jsonBlock.title = `Top ${preferencesObj.top} ${preferencesObj.key1Type}s having most ${preferencesObj.key1Ind}`;
 	} else {
 		jsonBlock.title = 
-		`Top ${preferencesObj.top} ${preferencesObj.key1.type}s having most ${preferencesObj.key1.ind} with ${preferencesObj.key2.type} ID = ${preferencesObj.key2.id}`;
+		`Top ${preferencesObj.top} ${preferencesObj.key1Type}s having most ${preferencesObj.key1Ind} with ${preferencesObj.key2Type} ID = ${preferencesObj.key2Id}`;
 	}
-	preferencesObj.data = [];
 
 	return Promise.all(response.map((item) => {
         let part = {};
 
-    	if (preferencesObj.key1.type === 'cliente') {
+    	if (preferencesObj.key1Type === 'cliente') {
     		part.idCliente = item.idCliente ;
     		part.nombCliente = item.nombCliente ;
     	} else {
@@ -88,7 +87,7 @@ const principalCallback = (response, preferencesObj, jsonBlock) => {
     		part.nombProd = item.nombProd ;
     	}
 
-    	if (preferencesObj.key1.type === 'ventas') {
+    	if (preferencesObj.key1Type === 'ventas') {
     		part.subtotal = item.subtotal ;
     	} else {
     		part.cantProd = item.cantProd ;
