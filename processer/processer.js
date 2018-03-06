@@ -14,16 +14,14 @@ async function devuelveUrl(preferencesObj, url) {
   }
 };
 
-function devuelveBloque(preferencesObj,jsonBlock) {
-    return new Promise(function(resolve,reject) {
-        block.principal(preferencesObj)
-        .then(jsonBlock => resolve(jsonBlock))
-        .catch((err) => {
-            console.log(err);
-            reject(err);
-            throw error;
-        });
-    });
+async function devuelveBloque(preferencesObj,jsonBlock) {
+    try {
+        jsonBlock = await block.principal(preferencesObj);
+
+        return jsonBlock;
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 function devuelveNotificacion(preferencesObj,notf) {
