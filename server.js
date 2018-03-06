@@ -12,8 +12,8 @@ app.post('/report', function(request, response){
     });
 });
 
-app.post('/block', function(request, response){
-    Processer.devuelveBloque(request.body)
+app.get('/block', function(request, response){
+    Processer.devuelveBloque(request.query)
     .then((jsonBlock) => {
         return response.send(jsonBlock);
     });
