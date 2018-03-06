@@ -95,7 +95,9 @@ function queryReportNivel1(preferencesObj){
     return sequelize.query(query, { type: Sequelize.QueryTypes.SELECT });
 }
 
-const principalCallback = (response, preferencesObj, repJson) => {
+const principalCallback = async (response, preferencesObj) => {
+	let repJson = {};
+	
     repJson.clientID = preferencesObj.clientID;
     repJson.date = new Date();
     repJson.title = `${preferencesObj.param.operation} of ${preferencesObj.param.type} grouped by ${preferencesObj.key1} from ${preferencesObj.start_date} to ${preferencesObj.end_date}`;
@@ -127,7 +129,7 @@ const principalCallback = (response, preferencesObj, repJson) => {
         var auxData=[];
     }
 
-    return Promise.all(response.map((item) => {
+    let arrayOfParts= await Promise.all(response.map(async (item) => {
         let row;
         let part = {};
 
@@ -161,9 +163,8 @@ const principalCallback = (response, preferencesObj, repJson) => {
 
         part.data = [];
 
-        return queryReportNivel2(preferencesObj, row)
-        .then(queryResponse => {
-            let auxarray = queryResponse.map(item => {
+        let queryResponse = await queryReportNivel2(preferencesObj, row);
+        let auxarray = await queryResponse.map(item => {
                 let innerpart = {};
 
                 if (preferencesObj.key2 === 'producto') {
@@ -178,52 +179,45 @@ const principalCallback = (response, preferencesObj, repJson) => {
                 innerpart.value = item.valor;
 
                 return innerpart;
-            });
+        });
 
-            return auxarray;
-        })
-        .then(auxarray => {
-            if(preferencesObj.type2 === 'line-chart'){
-                let partInnerLine = {};
-                partInnerLine.label = 'Tiempo';
-                partInnerLine.value = 0;
-                partInnerLine.clickable = false;
-                partInnerLine.title = '';
-                partInnerLine.type = '';
-                partInnerLine.legendX = '';
-                partInnerLine.legendY = '';
-                partInnerLine.data = auxarray;
-                part.data.push(partInnerLine);
-            } else {
-                part.data = auxarray; 
-            }
-            return part;
-        })
-    }))
-    .then(arrayOfParts => {
-        if (preferencesObj.type1 === 'line-chart'){
-            innerLine.data = arrayOfParts;
-            repJson.data[0] = innerLine;
+        if(preferencesObj.type2 === 'line-chart'){
+            let partInnerLine = {};
+            partInnerLine.label = 'Tiempo';
+            partInnerLine.value = 0;
+            partInnerLine.clickable = false;
+            partInnerLine.title = '';
+            partInnerLine.type = '';
+            partInnerLine.legendX = '';
+            partInnerLine.legendY = '';
+            partInnerLine.data =  await auxarray;
+            part.data.push(partInnerLine);
         } else {
-            repJson.data = arrayOfParts;
+            part.data = await auxarray; 
         }
-
-        //console.log("============================================");
-        //console.log(repJson);
-
-        return repJson;
-    });
+        return part;
+    }));
+    
+    if (preferencesObj.type1 === 'line-chart'){
+        innerLine.data = arrayOfParts;
+        repJson.data[0] = innerLine;
+    } else {
+        repJson.data = arrayOfParts;
+    }
+    return repJson;
 }
 
-function principal(preferencesObj) {
+async function principal(preferencesObj) {
     let repJson = {};
+    try {
+      let reponse = await queryReportNivel1(preferencesObj);
+      let repJson = await principalCallback(reponse, preferencesObj);
 
-    return queryReportNivel1(preferencesObj)
-        .then((response) => principalCallback(response, preferencesObj, repJson))
-        .catch((error) => {
-            console.log(error);
-            throw error;
-        });
+      return repJson;
+    } catch (e) {
+      console.log('Reporter module error in principal function');
+      console.log(e);
+    }
 };
 
 
