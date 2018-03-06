@@ -129,7 +129,7 @@ const principalCallback = async (response, preferencesObj) => {
         var auxData=[];
     }
 
-    let arrayOfParts= await Promise.all(response.map(async (item) => {
+    let arrayOfParts = await Promise.all(response.map(async (item) => {
         let row;
         let part = {};
 

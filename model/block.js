@@ -64,7 +64,9 @@ function queryblock(preferencesObj){
     return sequelize.query(query, { type: Sequelize.QueryTypes.SELECT });
 }
 
-const principalCallback = (response, preferencesObj, jsonBlock) => {
+const principalCallback = async (response, preferencesObj) => {
+    let jsonBlock = {};
+
 	jsonBlock.clientID = preferencesObj.clientID ;
 	jsonBlock.date = new Date() ;
 	jsonBlock.start_date = preferencesObj.start_date ;
@@ -76,41 +78,39 @@ const principalCallback = (response, preferencesObj, jsonBlock) => {
 		`Top ${preferencesObj.top} ${preferencesObj.key1Type}s having most ${preferencesObj.key1Ind} with ${preferencesObj.key2Type} ID = ${preferencesObj.key2Id}`;
 	}
 
-	return Promise.all(response.map((item) => {
+    let arrayOfParts =  await Promise.all(response.map((item) => {
         let part = {};
 
-    	if (preferencesObj.key1Type === 'cliente') {
-    		part.idCliente = item.idCliente ;
-    		part.nombCliente = item.nombCliente ;
-    	} else {
-    		part.idProducto = item.idProducto ;
-    		part.nombProd = item.nombProd ;
-    	}
+        if (preferencesObj.key1Type === 'cliente') {
+            part.idCliente = item.idCliente ;
+            part.nombCliente = item.nombCliente ;
+        } else {
+            part.idProducto = item.idProducto ;
+            part.nombProd = item.nombProd ;
+        }
 
-    	if (preferencesObj.key1Type === 'ventas') {
-    		part.subtotal = item.subtotal ;
-    	} else {
-    		part.cantProd = item.cantProd ;
-    	}
+        if (preferencesObj.key1Type === 'ventas') {
+            part.subtotal = item.subtotal ;
+        } else {
+            part.cantProd = item.cantProd ;
+        }
 
         return part;
-    }))
-    .then(arrayOfParts => {
-        jsonBlock.data = arrayOfParts ;
-        console.log(jsonBlock) ;
-        return jsonBlock;
-    });
+    }));
+    jsonBlock.data = await arrayOfParts;
+    return jsonBlock;
 }
 
-function principal(preferencesObj) {
+async function principal(preferencesObj) {
     let jsonBlock = {};
-
-    return queryblock(preferencesObj)
-        .then((response) => principalCallback(response, preferencesObj, jsonBlock))
-        .catch((error) => {
-            console.log(error);
-            throw error;
-        });
+    try {
+        let response = await queryblock(preferencesObj);
+        let jsonBlock = await principalCallback(response, preferencesObj);
+        return jsonBlock;
+    } catch (e) {
+      console.log('Reporter module error in principal function');
+      console.log(e);
+    }
 };
 
 
