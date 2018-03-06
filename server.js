@@ -5,11 +5,9 @@ var Processer = require("./processer/processer");
 const app = express();
 app.use(bodyParser.json());
 
-app.post('/report', function(request, response){
-    Processer.devuelveUrl(request.body)
-    .then((url) => {
-        return response.send(url);
-    });
+app.post('/report', async function(request, response){
+    let url = await Processer.devuelveUrl(request.body);
+    response.send(url);
 });
 
 app.get('/block', function(request, response){
