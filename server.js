@@ -10,11 +10,9 @@ app.post('/report', async function(request, response){
     response.send(url);
 });
 
-app.get('/block', function(request, response){
-    Processer.devuelveBloque(request.query)
-    .then((jsonBlock) => {
-        return response.send(jsonBlock);
-    });
+app.get('/block', async function(request, response){
+    let jsonBlock = await Processer.devuelveBloque(request.query);
+    response.send(jsonBlock);
 });
 
 app.post('/alert', function(request, response){
