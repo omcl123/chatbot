@@ -27,7 +27,7 @@ function genDataBarAndChilds(jsonRep,lastGraph,dirName,namePage){
       var paramHtmlChild ={header:'',body:''};
       var newNamePage = namePage +"-" +jsonRep['data'][i]['label'];
       var newdirAndPage = dirName+"/"+newNamePage+".html";
-      buildHeaderBody(paramHtmlChild,jsonRep['data'][i],dirName,newNamePage,true);
+      buildHeaderBody(paramHtmlChild,jsonRep['data'][i],dirName,newNamePage,namePage,true);
       createPage(newdirAndPage,paramHtmlChild);
     }
 
@@ -55,7 +55,7 @@ function genDataPieAndChilds(jsonRep,lastGraph,dirName,namePage){
       var paramHtmlChild ={header:'',body:''};
       var newNamePage = namePage +"-" +jsonRep['data'][i]['label'];
       var newdirAndPage = dirName+"/"+newNamePage+".html";
-      buildHeaderBody(paramHtmlChild,jsonRep['data'][i],dirName,newNamePage,true);
+      buildHeaderBody(paramHtmlChild,jsonRep['data'][i],dirName,newNamePage,namePage,true);
       createPage(newdirAndPage,paramHtmlChild); 
     }
 
@@ -90,7 +90,7 @@ function genDataLineAndChilds(jsonRep,lastGraph,dirName,namePage){
         var newNamePage = namePage +"-" +jsonRep['data'][i]['label']+"-" +jsonRep['data'][i]['data'][j]['label'];
         var newdirAndPage = dirName+"/"+newNamePage+".html"; 
         //newNamePage = encodeURI(newNamePage);
-        buildHeaderBody(paramHtmlChild,jsonRep['data'][i]['data'][j],dirName,newNamePage,true);
+        buildHeaderBody(paramHtmlChild,jsonRep['data'][i]['data'][j],dirName,newNamePage,namePage,true);
         createPage(newdirAndPage,paramHtmlChild);
       }
 
@@ -108,7 +108,7 @@ function genDataLineAndChilds(jsonRep,lastGraph,dirName,namePage){
   return textDataReturn;
 };
 
-function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
+function buildHeaderBody(objHtml,jsonRep,dirName,namePage,parentName,lastGraph){
   var title = jsonRep['title'];
   var legendY = '';
   var legendX = '';
@@ -147,9 +147,25 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
     }
     objHtml.header += '}'+
                     '}'+
-                    '</script>';
-    objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-            '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
+                    '</script>'+
+                    '<style>'+
+                      '#backButton {'+
+                      'border-radius: 4px;'+
+                      'padding: 8px;'+
+                      'border: none;'+
+                      'font-size: 16px;'+
+                      'background-color: #2eacd1;'+
+                      'color: white;'+
+                      'top: 10px;'+
+                      'right: 10px;'+
+                      'cursor: pointer;'+
+                      '}'+
+                    '</style>';
+    objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>';
+    if(lastGraph){
+      objHtml.body += '<div style=" max-width: 920px; margin: 0px auto;"><button id="backButton" onclick="location.href = \''+parentName +'.html'+'\';" >< Back</button></div>';
+    }
+    objHtml.body += '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
   }else if(jsonRep['type']=="pie-chart"){
     //Pie
     textData = genDataPieAndChilds(jsonRep,lastGraph,dirName,namePage);
@@ -178,9 +194,25 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
       objHtml.header +=  'if(e.dataPoint.infoClick){location.href='+namePage+'+ "-"+ e.dataPoint.name +'+'".html";}'; 
     }
     objHtml.header += '}'+
-                      '</script>';
-    objHtml.body=   '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-                    '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
+                      '</script>'+
+                      '<style>'+
+                      '#backButton {'+
+                      'border-radius: 4px;'+
+                      'padding: 8px;'+
+                      'border: none;'+
+                      'font-size: 16px;'+
+                      'background-color: #2eacd1;'+
+                      'color: white;'+
+                      'top: 10px;'+
+                      'right: 10px;'+
+                      'cursor: pointer;'+
+                      '}'+
+                    '</style>';
+    objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>';
+    if(lastGraph){
+      objHtml.body += '<div style=" max-width: 920px; margin: 0px auto;"><button id="backButton" onclick="location.href = \''+parentName +'.html'+'\';" >< Back</button></div>';
+    }
+    objHtml.body += '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
   }else if(jsonRep['type']=="line-chart"){
     //Line
     textData = genDataLineAndChilds(jsonRep,lastGraph,dirName,namePage);
@@ -222,9 +254,25 @@ function buildHeaderBody(objHtml,jsonRep,dirName,namePage,lastGraph){
       objHtml.header +=  'if(e.dataPoint.infoClick){location.href='+namePage+'+ "-"+ e.dataSeries.name + "-" + e.dataPoint.label +'+'".html";}'; 
     }
     objHtml.header +='}'+
-                    '</script>';
-    objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>'+
-            '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
+                    '</script>'+
+                    '<style>'+
+                      '#backButton {'+
+                      'border-radius: 4px;'+
+                      'padding: 8px;'+
+                      'border: none;'+
+                      'font-size: 16px;'+
+                      'background-color: #2eacd1;'+
+                      'color: white;'+
+                      'top: 10px;'+
+                      'right: 10px;'+
+                      'cursor: pointer;'+
+                      '}'+
+                    '</style>';
+    objHtml.body = '<div id="chartContainer" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>';
+    if(lastGraph){
+      objHtml.body += '<div style=" max-width: 920px; margin: 0px auto;"><button id="backButton" onclick="location.href = \''+parentName +'.html'+'\';" >< Back</button></div>';
+    }
+    objHtml.body += '<script src=https://canvasjs.com/assets/script/canvasjs.min.js></script>';
   }else{
     return "No existe ese reporte";
   }
@@ -254,7 +302,7 @@ module.exports={
 
     createDir(dirName);
 
-    buildHeaderBody(paramHtml,jsonData,dirName,idPage,false);
+    buildHeaderBody(paramHtml,jsonData,dirName,idPage,"",false);
 
     createPage(dirAndPage,paramHtml);
 

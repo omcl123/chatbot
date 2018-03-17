@@ -6,6 +6,7 @@ const alert = require("../model/alert.js");
 async function devuelveUrl(preferencesObj, url) {
   try {
     reportJson = await reporte.principal(preferencesObj);
+    console.log("========================================================================><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     url = await generador.generateReport(reportJson);
 
     return url;
